@@ -1,0 +1,71 @@
+  // async function sendUnitAction(action: UnitAction) {
+  //   if (!connection.value) {
+  //     throw new Error('Not connected to server')
+  //   }
+
+  //   try {
+  //     await connection.value.invoke(
+  //       'SendUnitAction',
+  //       gameStore.gameToken,
+  //       gameStore.playerToken,
+  //       action
+  //     )
+      
+  //     gameStore.addLog(`➡️ Действие отправлено: ${action.actionType}`, 'info')
+  //   } catch (error) {
+  //     console.error('Send action error:', error)
+  //     gameStore.addLog(`❌ Ошибка отправки действия: ${error}`, 'error')
+  //     throw error
+  //   }
+  // }
+
+  // async function endTurn() {
+  //   if (!connection.value) return
+
+  //   try {
+  //     await connection.value.invoke('EndTurn', gameStore.gameToken, gameStore.playerToken)
+  //     gameStore.addLog('⏹️ Ход завершён', 'success')
+  //   } catch (error) {
+  //     console.error('End turn error:', error)
+  //     gameStore.addLog(`❌ Ошибка завершения хода: ${error}`, 'error')
+  //   }
+  // }
+
+    // function handleEffects(effects: GameEffect[]) {
+  //   effects.forEach(effect => {
+  //     switch (effect.effectType) {
+  //       case 'unit_move':
+  //         handleUnitMove(effect.parameters)
+  //         break
+  //       case 'shoot':
+  //         handleShoot(effect.parameters)
+  //         break
+  //       case 'damage':
+  //         handleDamage(effect.parameters)
+  //         break
+  //       default:
+  //         console.log('Unknown effect:', effect.effectType)
+  //     }
+  //   })
+  // }
+
+    // function handleUnitMove(params: any) {
+  //   gameStore.updateUnit(params.unitId, {
+  //     x: params.toX,
+  //     y: params.toY
+  //   })
+  //   gameStore.addLog(`⬆️ Юнит #${params.unitId} переместился`, 'info')
+  // }
+
+  // function handleShoot(params: any) {
+  //   gameStore.addLog(`💥 Выстрел! Урон: ${params.damage}`, 'warning')
+  // }
+
+  // function handleDamage(params: any) {
+  //   const unit = gameStore.units.find(u => u.unitId === params.targetUnitId)
+  //   if (unit) {
+  //     gameStore.updateUnit(params.targetUnitId, {
+  //       health: Math.max(0, unit.health - params.damage)
+  //     })
+  //   }
+  // }
