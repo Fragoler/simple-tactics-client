@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import * as signalR from '@microsoft/signalr'
 import { useGameStore } from '@/stores/gameStore'
-import type { GameState } from '@/types/game'
+import type { GameState, Player } from '@/types/game'
 
 const connection = ref<signalR.HubConnection | null>(null)
 
@@ -20,8 +20,10 @@ export function useSignalR() {
       gameStore.addLog('✅ Подключено к серверу', 'success')
 
       await addHandelers()
+      
+      await joinGame(gameToken, playerToken)
       await loadGameState(gameToken, playerToken)
-
+      await requestMyPlayer(gameToken, playerToken)
       
     } catch (error) {
       console.error('Connection error:', error)
@@ -34,10 +36,10 @@ export function useSignalR() {
 
   async function buildConnection() {
     connection.value = new signalR.HubConnectionBuilder()
-        .withUrl('/game')
-        .withAutomaticReconnect([0, 0, 0, 1000, 3000, 5000])
-        .configureLogging(signalR.LogLevel.Information)
-        .build()
+      .withUrl('/game')
+      .withAutomaticReconnect([0, 0, 0, 1000, 3000, 5000])
+      .configureLogging(signalR.LogLevel.Information)
+      .build()
   }
 
   async function addHandelers() {
@@ -47,9 +49,12 @@ export function useSignalR() {
     connection.value.on('gameState', (state: GameState) => {
       console.log('📊 Game state received:', state)
       gameStore.updateGameState(state)
-      gameStore.addLog(`📊 состояние обновлено`, 'success')
     })
 
+    connection.value.on('playerId', (player: Player) => {
+      console.log('📊 My player received:', player)
+      gameStore.myPlayerId = player.playerId
+    })
 
     // server error 
     connection.value.on('error', (message: string) => {
@@ -75,14 +80,27 @@ export function useSignalR() {
     })
   }
 
+  async function joinGame(gameToken: string, playerToken: string) {
+    if (connection.value === null)
+      throw Error("Connection is null");
+
+    await connection.value.start()
+    gameStore.setConnectionStatus('connected')
+    await connection.value.invoke('JoinGame', gameToken, playerToken)
+  }
+
   async function loadGameState(gameToken: string, playerToken: string) {
     if (connection.value === null)
-            throw Error("Connection is null");
+      throw Error("Connection is null");
 
-      await connection.value.start()
-      gameStore.setConnectionStatus('connected')
-      await connection.value.invoke('JoinGame', gameToken, playerToken)
-      await connection.value.invoke('RequestGameState', gameToken, playerToken)
+    await connection.value.invoke('RequestGameState', gameToken, playerToken)
+  }
+
+  async function requestMyPlayer(gameToken: string, playerToken: string) {
+    if (connection.value === null)
+      throw Error("Connection is null");
+
+    await connection.value.invoke("RequestPlayerId", gameToken, playerToken)
   }
 
 

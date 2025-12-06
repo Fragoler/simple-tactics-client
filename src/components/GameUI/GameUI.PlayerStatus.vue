@@ -1,0 +1,38 @@
+<script setup lang="ts">
+import { useGameStore } from '@/stores/gameStore';
+
+
+const gameStore = useGameStore()
+
+</script>
+
+<template>
+	<div class="bg-gray-900 p-4 rounded-lg border border-gray-700 space-y-4">
+		<h3 class="text-primary font-bold text-sm mb-3 uppercase">Статус игры</h3>
+
+		<div class="space-y-2">
+			<div 
+				v-for="player in gameStore.players" 
+				:key="player.playerId"
+				class="bg-gray-800 p-2 rounded text-sm"
+			>
+				<div class="flex">
+					
+				
+					<span v-if="player.playerId !== gameStore.myPlayerId"
+								:class="player.playerId === 1 ? 'text-primary' : 'text-secondary'" class="font-semibold">
+						{{ player.playerName }}
+					</span>
+					<span v-else
+								:class="player.playerId === 1 ? 'text-primary' : 'text-secondary'" class="font-semibold">
+						Me
+					</span>
+
+					<span v-if="player.isReady" class="text-green-400 text-xs">Готов</span>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+</template>

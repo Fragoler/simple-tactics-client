@@ -31,7 +31,7 @@ onMounted(async () => {
   })
 })
 
-watch(() => gameStore.selectedUnitId, (newId, oldId) => {
+watch(() => gameStore.selectedUnit?.unitId, (newId, oldId) => {
   if (oldId) {
     unhighlightUnit(oldId)
     clearHighlights()
@@ -69,13 +69,13 @@ watch(() => gameStore.selectedUnitId, (newId, oldId) => {
 
 .game-canvas {
   display: block;
-  /* image-rendering: pixelated;
-  image-rendering: crisp-edges; */
-  
+
   max-width: 100%;
   max-height: 100%;
+
   width: auto;
   height: auto;
+
   object-fit: contain;
 }
 </style>

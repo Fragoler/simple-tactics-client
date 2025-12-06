@@ -12,9 +12,11 @@ export const useGameStore = defineStore('game', () => {
   const units = ref<Unit[]>([])
   
   const players = ref<Player[]>([])
-  const myPlayer = ref<Player>()
+  const myPlayerId = ref<number>()
 
   const selectedUnitId = ref<number | null>(null)
+
+  const isPlanningPhase = ref<boolean>(true)
 
   const connectionStatus = ref<ConnectionStatus>('disconnected')
   const logs = ref<LogEntry[]>([])
@@ -26,20 +28,6 @@ export const useGameStore = defineStore('game', () => {
     return units.value.find((u) => u.unitId === selectedUnitId.value)
   })
 
-  const myPlayerId = computed(() => {
-    return myPlayer.value?.playerId ?? -1
-  })
-
-  const currentPlayer : ComputedRef<Player> = computed(() => {
-      return players.value[0] // TODO: Real logic of current player
-    }
-  )
-
-  const isMyTurn = computed(() => {
-      return currentPlayer.value
-             && currentPlayer.value.playerId === myPlayerId.value
-    }
-  )
 
   // Actions
   function updateTokens(_gameToken: string, _playerToken: string)
@@ -52,6 +40,8 @@ export const useGameStore = defineStore('game', () => {
     if (state.players) players.value = state.players
     if (state.map) map.value = state.map
     if (state.units) units.value = state.units
+
+    addLog(`📊 состояние обновлено`, 'success')
   }
 
   function selectUnit(unitId: number) {
@@ -103,14 +93,13 @@ export const useGameStore = defineStore('game', () => {
     logs,
     map,
     connectionStatus,
+    isPlanningPhase,
     
     // Computed
     isConnected,
     selectedUnit,
     myPlayerId,
-    currentPlayer,
-    isMyTurn,
-    
+        
     // Actions
     updateTokens,
     updateGameState,

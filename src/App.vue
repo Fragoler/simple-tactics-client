@@ -50,17 +50,6 @@ function handleUnitClick(unitId: number) {
 //     console.error('Move error:', error)
 //   }
 // }
-
-// async function handleEndTurn() {
-//   if (!gameStore.isMyTurn) return
-  
-//   try {
-//     gameStore.deselectUnit()
-//     await endTurn()
-//   } catch (error) {
-//     console.error('End turn error:', error)
-//   }
-// }
 //#endregion
 </script>
 
