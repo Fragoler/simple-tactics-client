@@ -57,7 +57,7 @@ function createHealthFill(unit: Unit, color: number): Graphics {
   const radius = UnitSizes.radius
   
   const maxFillRadius = radius - UnitSizes.strokeWidth
-  const fillRadius = maxFillRadius * healthPercent
+  const fillRadius = maxFillRadius * healthPercent + 1
 
   if (unit.sprite === 'circle') {
     healthFill

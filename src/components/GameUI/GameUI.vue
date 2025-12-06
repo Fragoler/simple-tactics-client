@@ -41,14 +41,10 @@ const getLogColor = (type: string) => {
     <UnitInfo />
 
     <!-- Game Status -->
-    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
+    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 space-y-4">
       <h3 class="text-primary font-bold text-sm mb-3 uppercase">Статус игры</h3>
-      <div class="space-y-2 text-sm">
 
-        <!-- <div class="flex justify-between">
-          <span class="text-gray-400">Раунд:</span>
-          <span class="text-primary font-bold text-lg">{{ gameStore. }}</span>
-        </div> -->
+      <div class="space-y-2 text-sm">
         
         <div v-if="gameStore.currentPlayer" class="flex justify-between">
           <span class="text-gray-400">Ход:</span>
@@ -61,6 +57,24 @@ const getLogColor = (type: string) => {
           🎯 Ваш ход!
         </div>
       </div>
+
+
+      <div class="space-y-2">
+        <div 
+          v-for="player in gameStore.players" 
+          :key="player.playerId"
+          class="bg-gray-800 p-2 rounded text-sm"
+        >
+          <div class="flex items-center justify-between">
+            <span :class="player.playerId === 1 ? 'text-primary' : 'text-secondary'" class="font-semibold">
+              {{ player.playerName }}
+            </span>
+            <span v-if="player.isReady" class="text-green-400 text-xs">✓ Готов</span>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
     <!-- Controls -->
@@ -79,29 +93,6 @@ const getLogColor = (type: string) => {
       </button>
     </div>
 
-    <!-- Players -->
-    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
-      <h3 class="text-primary font-bold text-sm mb-3 uppercase">Игроки</h3>
-      <div class="space-y-2">
-        <div 
-          v-for="player in gameStore.players" 
-          :key="player.playerId"
-          class="bg-gray-800 p-2 rounded text-sm"
-        >
-          <div class="flex items-center justify-between">
-            <span :class="player.playerId === 1 ? 'text-primary' : 'text-secondary'" class="font-semibold">
-              {{ player.playerName }}
-            </span>
-            <span v-if="player.isReady" class="text-green-400 text-xs">✓ Готов</span>
-          </div>
-
-          <!-- <div class="text-gray-400 text-xs mt-1">
-            Юнитов: {{ player }}
-          </div> -->
-
-        </div>
-      </div>
-    </div>
 
 
     <!-- Connection menu -->
