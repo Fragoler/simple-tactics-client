@@ -3,10 +3,10 @@ import type { Unit } from '@/types/unit'
 import { state } from './index'
 import { getPolygonPoints } from './utils'
 import { getPlayerColor } from './colors'
-import { UnitSizes } from './constants'
+import { UnitParams } from './constants'
 
 export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
-  if (!state.app.value || !state.isFieldInitialized) return
+  if (!state.isLayersInitialized) return
 
   const color = getPlayerColor(unit.playerId)
   const container = new Container()
@@ -16,32 +16,36 @@ export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
   container.interactive = true
   container.cursor = 'pointer'
 
-  const unitFill = createHealthFill(unit, color)
-  const unitOutline = createUnitOutline(unit, color)
-
-  container.addChild(unitFill)
-  container.addChild(unitOutline)
+  container.addChild(new Graphics())
+  container.addChild(new Graphics())
 
   container.on('pointerdown', (e) => {
     e.stopPropagation()
     onClick(unit)
   })
 
-  state.unitLayer.value?.addChild(container)
+  state.unitLayer.value!.addChild(container)
   state.unitContainers.value.set(unit.unitId, container)
+
+  updateUnitFill(unit, color)
+  updateUnitOutline(unit, color)
 }
 
-function createUnitOutline(unit: Unit, color: number): Graphics {
-  const unitOutline = new Graphics()
-  const radius = UnitSizes.radius
-  const strokeWidth = UnitSizes.strokeWidth
+function updateUnitOutline(unit: Unit, color: number, childId: number = 1): Graphics {
+  const container = state.unitContainers.value.get(unit.unitId) as Container<any>
+  const unitOutline = container.children[childId] as Graphics
+  unitOutline.clear()
 
+  const radius = UnitParams.radius
+  const strokeWidth = UnitParams.strokeWidth
+
+  // TODO : REFACTOR THIS!!!
   if (unit.sprite === 'circle') {
     unitOutline
       .circle(0, 0, radius)
       .stroke({ width: strokeWidth, color: color })
   } else {
-    const sides = unit.sprite === 'triangle' ? UnitSizes.triangleSides : UnitSizes.squareSides
+    const sides = unit.sprite === 'triangle' ? UnitParams.triangleSides : UnitParams.squareSides
     const points = getPolygonPoints(sides, radius)
     unitOutline
       .poly(points)
@@ -51,27 +55,30 @@ function createUnitOutline(unit: Unit, color: number): Graphics {
   return unitOutline
 }
 
-function createHealthFill(unit: Unit, color: number): Graphics {
-  const healthFill = new Graphics()
-  const healthPercent = Math.max(0, Math.min(1, unit.curHealth / unit.maxHealth))
-  const radius = UnitSizes.radius
-  
-  const maxFillRadius = radius - UnitSizes.strokeWidth
-  const fillRadius = maxFillRadius * healthPercent + 1
+function updateUnitFill(unit: Unit, color: number, childId: number = 0): Graphics {
+  const container = state.unitContainers.value.get(unit.unitId) as Container<any>
+  const unitFill = container.children[childId] as Graphics
+  unitFill.clear()
 
+  const healthPercent = Math.max(0, Math.min(1, unit.curHealth / unit.maxHealth))
+  const radius = UnitParams.radius
+  const fillRadius = radius * healthPercent
+
+
+  // TODO : REFACTOR THIS!!!
   if (unit.sprite === 'circle') {
-    healthFill
+    unitFill
       .circle(0, 0, fillRadius)
       .fill({ color: color, alpha: 0.8 })
   } else {
-    const sides = unit.sprite === 'triangle' ? UnitSizes.triangleSides : UnitSizes.squareSides
+    const sides = unit.sprite === 'triangle' ? UnitParams.triangleSides : UnitParams.squareSides
     const points = getPolygonPoints(sides, fillRadius)
-    healthFill
+    unitFill
       .poly(points)
       .fill({ color: color, alpha: 0.8 })
   }
 
-  return healthFill
+  return unitFill
 }
 
 export function updateUnit(unit: Unit) {
@@ -83,20 +90,10 @@ export function updateUnit(unit: Unit) {
 
   animateMove(container, targetX, targetY)
 
-  const oldFill = container.children[0] as Graphics
-  const oldOutline = container.children[1] as Graphics
   const color = getPlayerColor(unit.playerId)
 
-  container.removeChild(oldFill)
-  container.removeChild(oldOutline)
-  oldFill.destroy()
-  oldOutline.destroy()
-
-  const newFill = createHealthFill(unit, color)
-  const newOutline = createUnitOutline(unit, color)
-  
-  container.addChild(newFill)
-  container.addChild(newOutline)
+  updateUnitFill(unit, color)
+  updateUnitOutline(unit, color)
 }
 
 function animateMove(container: Container, targetX: number, targetY: number, duration = 300) {
@@ -129,7 +126,7 @@ export function removeUnit(unitId: number) {
 }
 
 export function syncUnits(newUnits: Unit[], gameStore: any) {
-  if (!state.isFieldInitialized) return
+  if (!state.isLayersInitialized) return
 
   const currentIds = new Set(newUnits.map((u) => u.unitId))
   for (const [id] of state.unitContainers.value) {

@@ -3,21 +3,21 @@ import type { Position, Unit } from '@/types/unit'
 import { Application, Container } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { initializeLayers } from './layers'
-import { drawBackground, drawGrid, drawMapCells, drawBorder } from './rendering'
+import { drawMap } from './rendering'
 import { syncUnits } from './units'
 import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights'
 import { screenToGrid } from './utils'
 import { GameColors } from './colors'
 
 export const state = {
-  app: ref<Application | null>(null),
-  unitContainers: ref(new Map<number, Container>()),
-  highlightLayer: ref<Container>(),
-  gridLayer: ref<Container>(),
+  app:             ref<Application | null>(null),
+  unitContainers:  ref(new Map<number, Container>()),
+  highlightLayer:  ref<Container>(),
+  gridLayer:       ref<Container>(),
   backgroundLayer: ref<Container>(),
-  unitLayer: ref<Container>(),
-  cellSize: 50, 
-  isFieldInitialized: false
+  unitLayer:       ref<Container>(),
+  cellSize:        50, 
+  isLayersInitialized: false
 }
 
 export function usePixiGame() {
@@ -54,12 +54,17 @@ export function usePixiGame() {
     watch(
       () => gameStore.map,
       (newMapState) => {
+        if (state.app.value == null)
+          return 
+
         console.log('Map changed:', newMapState)
-        if (newMapState && !state.isFieldInitialized) {
-          initializeField()
-        } else if (newMapState && state.isFieldInitialized) {
-          redrawField()
+        
+        if (!state.isLayersInitialized) {
+          initializeLayers(state.app.value as Application)
+          state.isLayersInitialized = true
         }
+        
+        updateField()
       },
       { deep: true, immediate: true }
     )
@@ -68,7 +73,7 @@ export function usePixiGame() {
       () => gameStore.units,
       (newUnits) => {
         console.log('Units changed:', newUnits)
-        if (state.isFieldInitialized) {
+        if (state.isLayersInitialized) {
           syncUnits(newUnits, gameStore)
         }
       },
@@ -76,34 +81,16 @@ export function usePixiGame() {
     )
   }
 
-  function initializeField() {
-    if (!state.app.value || !gameStore.map) return
-
-    console.log('Initializing field')
-
-    initializeLayers(state.app.value as Application)
-    resize()
-    drawMap()
-
-    state.isFieldInitialized = true
-  }
-
-  function redrawField() {
-    if (!state.isFieldInitialized) return
-
-    console.log('Redrawing field')
-    resize()
+  function updateField() {
+    console.log('Update field')
     
-    if (state.backgroundLayer.value) state.backgroundLayer.value.removeChildren()
-    if (state.gridLayer.value) state.gridLayer.value.removeChildren()
-    
+    resize()
     drawMap()
   }
 
   function resize() {
     if (!state.app.value || !gameStore.map) return
 
-    // ✅ Просто устанавливаем размер на основе карты и фиксированного cellSize
     const newWidth = gameStore.map.width * state.cellSize
     const newHeight = gameStore.map.height * state.cellSize
 
@@ -113,27 +100,11 @@ export function usePixiGame() {
     state.app.value.stage.hitArea = state.app.value.screen
   }
 
-  function drawMap() {
-    if (!state.backgroundLayer.value || !state.gridLayer.value || !gameStore.map) {
-      console.log('Cannot draw map - missing dependencies')
-      return
-    }
-
-    console.log('Drawing map')
-
-    drawBackground()
-    drawGrid()
-    drawBorder()
-    drawMapCells()
-  }
-
   function onStageClick(callback: (pos: Position) => void) {
     if (!state.app.value) return
 
     state.app.value.stage.on('pointerdown', (event) => {
-      const pos = event.data.global
-      const gridPos = screenToGrid(pos.x, pos.y)
-      callback(gridPos)
+      callback(screenToGrid(event.globalX, event.globalY))
     })
   }
 
@@ -144,7 +115,7 @@ export function usePixiGame() {
     }
     
     state.unitContainers.value.clear()
-    state.isFieldInitialized = false
+    state.isLayersInitialized = false
   }
 
   onUnmounted(() => {
@@ -152,7 +123,6 @@ export function usePixiGame() {
   })
 
   return {
-    app: state.app,
     initApp,
     drawMap,
     highlightUnit,

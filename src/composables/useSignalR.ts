@@ -80,6 +80,8 @@ export function useSignalR() {
     })
   }
 
+
+  // Send
   async function joinGame(gameToken: string, playerToken: string) {
     if (connection.value === null)
       throw Error("Connection is null");
@@ -102,8 +104,6 @@ export function useSignalR() {
 
     await connection.value.invoke("RequestPlayerId", gameToken, playerToken)
   }
-
-
 
   async function disconnect() {
     if (connection.value) {

@@ -12,8 +12,11 @@ export interface GameState {
 
 export interface MapState {
   name: string
+  
   width: number
   height : number
+
+  terrain : number[][]
 }
 
 export interface Player {

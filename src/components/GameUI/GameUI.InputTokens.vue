@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useSignalR } from '@/composables/useSignalR'
+import { useSignalR } from '@/composables/useSignalR.ts'
 import { useGameStore } from '@/stores/gameStore'
 
 const gameToken = ref('')

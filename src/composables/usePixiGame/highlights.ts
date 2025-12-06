@@ -1,17 +1,18 @@
-import { Graphics } from 'pixi.js'
+import { Container, Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
 import { GameColors } from './colors'
 
+
 export function highlightUnit(unitId: number) {
-  const container = state.unitContainers.value.get(unitId)
+  const container = state.unitContainers.value.get(unitId) as Container<any>
   if (container) {
     container.scale.set(1.2)
   }
 }
 
 export function unhighlightUnit(unitId: number) {
-  const container = state.unitContainers.value.get(unitId)
+  const container = state.unitContainers.value.get(unitId) as Container<any>
   if (container) {
     container.scale.set(1)
   }
@@ -19,7 +20,7 @@ export function unhighlightUnit(unitId: number) {
 
 export function showMovementRange(centerX: number, centerY: number, range: number) {
   const gameStore = useGameStore()
-  if (!gameStore.map || !state.isFieldInitialized) return
+  if (!gameStore.map || !state.isLayersInitialized) return
 
   clearHighlights()
   if (!state.highlightLayer.value) return

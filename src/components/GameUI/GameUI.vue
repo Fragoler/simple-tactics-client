@@ -1,7 +1,5 @@
 <script setup lang="ts">
 
-import { useGameStore } from '@/stores/gameStore'
-
 import PlayerStatus from './GameUI.PlayerStatus.vue'
 import Controls from './GameUI.Controls.vue'
 import ConnectionStatus from './GameUI.ConnectionStatus.vue';

@@ -41,9 +41,7 @@ export function getPlayerColor(playerId: number | null): number
 
 export function getCellColor(value: number): number {
   switch (value) {
-    case 1: return 0x2d4a2b
-    case 2: return 0x4a2d2d
-    case 3: return 0x2d3a4a
+    case 1: return 0x2d3a4a // Wall
     default: return GameColors.background
   }
 }

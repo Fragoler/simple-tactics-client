@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed, ComputedRef } from 'vue'
+import { ref, computed } from 'vue'
 import type { GameState, Player, LogEntry, ConnectionStatus, MapState } from '@/types/game'
 import type { Unit } from '@/types/unit'
 

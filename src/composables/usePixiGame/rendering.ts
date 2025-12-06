@@ -3,8 +3,32 @@ import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
 import { GameColors, getCellColor } from './colors'
 
-export function drawBackground() {
+export function drawMap() {
   const gameStore = useGameStore()
+
+  if (!state.backgroundLayer.value || !state.gridLayer.value) {
+    console.log('Cannot draw map - missing dependencies')
+    return
+  }
+
+  if (state.backgroundLayer.value) state.backgroundLayer.value.removeChildren()
+  if (state.gridLayer.value) state.gridLayer.value.removeChildren()
+
+
+  if (!gameStore.map)
+    return
+
+  console.log('Drawing map')
+
+  drawBackground()
+  drawGrid()
+  drawBorder()
+  drawMapCells()
+}
+
+function drawBackground() {
+  const gameStore = useGameStore()
+
   if (!gameStore.map || !state.backgroundLayer.value) return
 
   const bg = new Graphics()
@@ -18,21 +42,22 @@ export function drawBackground() {
   state.backgroundLayer.value.addChild(bg)
 }
 
-export function drawGrid() {
+function drawGrid() {
   const gameStore = useGameStore()
+  
   if (!gameStore.map || !state.gridLayer.value) return
 
   const grid = new Graphics()
   const gridStrokeWidth = Math.max(1, state.cellSize * 0.02)
 
-  // Вертикальные линии
+  // Vertical lines
   for (let x = 0; x <= gameStore.map.width; x++) {
     const xPos = x * state.cellSize
     grid.moveTo(xPos, 0)
     grid.lineTo(xPos, gameStore.map.height * state.cellSize)
   }
 
-  // Горизонтальные линии
+  // Horisontal lines
   for (let y = 0; y <= gameStore.map.height; y++) {
     const yPos = y * state.cellSize
     grid.moveTo(0, yPos)
@@ -43,7 +68,7 @@ export function drawGrid() {
   state.gridLayer.value.addChild(grid)
 }
 
-export function drawBorder() {
+function drawBorder() {
   const gameStore = useGameStore()
   if (!gameStore.map || !state.gridLayer.value) return
 
@@ -64,7 +89,7 @@ export function drawBorder() {
   state.gridLayer.value.addChild(border)
 }
 
-export function drawMapCells() {
+function drawMapCells() {
   const gameStore = useGameStore()
   if (!gameStore.map || !state.backgroundLayer.value) return
 
@@ -72,7 +97,7 @@ export function drawMapCells() {
 
   for (let y = 0; y < mapState.height; y++) {
     for (let x = 0; x < mapState.width; x++) {
-      const cellValue = 0
+      const cellValue = mapState.terrain[x][y]
 
       if (cellValue !== 0) {
         const cellGraphics = new Graphics()
