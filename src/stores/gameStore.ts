@@ -8,9 +8,10 @@ export const useGameStore = defineStore('game', () => {
   const gameToken = ref<string>('')
   const playerToken = ref<string>('')
 
-  const units = ref<Unit[]>([])
-  const players = ref<Player[]>([])
   const map = ref<MapState | null>()
+  const units = ref<Unit[]>([])
+  
+  const players = ref<Player[]>([])
   const myPlayer = ref<Player>()
 
   const selectedUnitId = ref<number | null>(null)
@@ -20,11 +21,10 @@ export const useGameStore = defineStore('game', () => {
 
   // Computed
   const isConnected = computed(() => connectionStatus.value == 'connected')
-  const mapState = computed(() => map.value ?? null) 
 
-  const selectedUnit = computed(() => 
-    units.value.find((u: { unitId: number | null }) => u.unitId === selectedUnitId.value)
-  )
+  const selectedUnit = computed(() => {
+    return units.value.find((u) => u.unitId === selectedUnitId.value)
+  })
 
   const myPlayerId = computed(() => {
     return myPlayer.value?.playerId ?? -1
@@ -49,9 +49,9 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function updateGameState(state: Partial<GameState>) {
-    if (state.units) units.value = state.units
     if (state.players) players.value = state.players
     if (state.map) map.value = state.map
+    if (state.units) units.value = state.units
   }
 
   function selectUnit(unitId: number) {
@@ -100,7 +100,6 @@ export const useGameStore = defineStore('game', () => {
     playerToken,
     units,
     players,
-    selectedUnitId,
     logs,
     map,
     connectionStatus,

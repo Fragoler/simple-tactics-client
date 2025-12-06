@@ -1,18 +1,14 @@
 import { ref, onUnmounted, watch } from 'vue'
-import { Application, Container } from 'pixi.js'
-
-import type { GameConfig } from '@/types/game'
 import type { Position, Unit } from '@/types/unit'
+import { Application, Container } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
+import { initializeLayers } from './layers'
+import { drawBackground, drawGrid, drawMapCells, drawBorder } from './rendering'
+import { syncUnits } from './units'
+import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights'
+import { screenToGrid } from './utils'
+import { GameColors } from './colors'
 
-import { initializeLayers } from './layers.ts'
-import { drawBackground, drawGrid, drawMapCells } from './rendering.ts'
-import { addUnit, updateUnit, removeUnit, syncUnits } from './units.ts'
-import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights.ts'
-import { screenToGrid } from './utils.ts'
-
-
-// Global canvas state
 export const state = {
   app: ref<Application | null>(null),
   unitContainers: ref(new Map<number, Container>()),
@@ -20,10 +16,9 @@ export const state = {
   gridLayer: ref<Container>(),
   backgroundLayer: ref<Container>(),
   unitLayer: ref<Container>(),
-  config: null as GameConfig | null,
+  cellSize: 50, 
   isFieldInitialized: false
 }
-
 
 export function usePixiGame() {
   const gameStore = useGameStore()
@@ -31,13 +26,20 @@ export function usePixiGame() {
   async function initApp(canvasElement: HTMLCanvasElement) {
     if (state.app.value) return
 
+    console.log('Background color:', GameColors.background)
+
+    if (isNaN(GameColors.background)) {
+      console.error('CSS colors not loaded properly!')
+      return
+    }
+
     state.app.value = new Application()
 
     await state.app.value.init({
       canvas: canvasElement,
       width: 100,
       height: 100,
-      backgroundColor: 0x1a1a2e,
+      backgroundColor: GameColors.background,
       antialias: true,
       resolution: window.devicePixelRatio || 1,
     })
@@ -49,21 +51,19 @@ export function usePixiGame() {
   }
 
   function setupWatchers(gameStore: any) {
-    // Отслеживание карты
     watch(
       () => gameStore.map,
       (newMapState) => {
         console.log('Map changed:', newMapState)
-        if (newMapState && state.config && !state.isFieldInitialized) {
+        if (newMapState && !state.isFieldInitialized) {
           initializeField()
-        } else if (newMapState && state.config && state.isFieldInitialized) {
+        } else if (newMapState && state.isFieldInitialized) {
           redrawField()
         }
       },
       { deep: true, immediate: true }
     )
 
-    // Отслеживание юнитов
     watch(
       () => gameStore.units,
       (newUnits) => {
@@ -76,17 +76,8 @@ export function usePixiGame() {
     )
   }
 
-  function setConfig(newConfig: GameConfig) {
-    state.config = newConfig
-    console.log('Config set:', state.config)
-
-    if (state.app.value && state.config && gameStore.map && !state.isFieldInitialized) {
-      initializeField()
-    }
-  }
-
   function initializeField() {
-    if (!state.app.value || !state.config || !gameStore.map) return
+    if (!state.app.value || !gameStore.map) return
 
     console.log('Initializing field')
 
@@ -102,34 +93,37 @@ export function usePixiGame() {
 
     console.log('Redrawing field')
     resize()
+    
+    if (state.backgroundLayer.value) state.backgroundLayer.value.removeChildren()
+    if (state.gridLayer.value) state.gridLayer.value.removeChildren()
+    
     drawMap()
   }
 
   function resize() {
-    if (!state.app.value || !gameStore.map || !state.config) return
+    if (!state.app.value || !gameStore.map) return
 
-    console.log('Resizing to:', gameStore.map.width, gameStore.map.height)
+    // ✅ Просто устанавливаем размер на основе карты и фиксированного cellSize
+    const newWidth = gameStore.map.width * state.cellSize
+    const newHeight = gameStore.map.height * state.cellSize
 
-    state.app.value.renderer.resize(
-      gameStore.map.width * state.config.cellSize,
-      gameStore.map.height * state.config.cellSize
-    )
+    console.log('Canvas size:', newWidth, 'x', newHeight)
+
+    state.app.value.renderer.resize(newWidth, newHeight)
     state.app.value.stage.hitArea = state.app.value.screen
   }
 
   function drawMap() {
-    if (!state.config || !state.backgroundLayer.value || !state.gridLayer.value || !gameStore.map) {
+    if (!state.backgroundLayer.value || !state.gridLayer.value || !gameStore.map) {
       console.log('Cannot draw map - missing dependencies')
       return
     }
 
     console.log('Drawing map')
 
-    state.backgroundLayer.value.removeChildren()
-    state.gridLayer.value.removeChildren()
-
     drawBackground()
     drawGrid()
+    drawBorder()
     drawMapCells()
   }
 
@@ -148,6 +142,7 @@ export function usePixiGame() {
       state.app.value.destroy(true)
       state.app.value = null
     }
+    
     state.unitContainers.value.clear()
     state.isFieldInitialized = false
   }
@@ -159,7 +154,6 @@ export function usePixiGame() {
   return {
     app: state.app,
     initApp,
-    setConfig,
     drawMap,
     highlightUnit,
     unhighlightUnit,

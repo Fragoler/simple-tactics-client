@@ -1,6 +1,7 @@
 import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
+import { GameColors } from './colors'
 
 export function highlightUnit(unitId: number) {
   const container = state.unitContainers.value.get(unitId)
@@ -18,7 +19,7 @@ export function unhighlightUnit(unitId: number) {
 
 export function showMovementRange(centerX: number, centerY: number, range: number) {
   const gameStore = useGameStore()
-  if (!state.config || !gameStore.map || !state.isFieldInitialized) return
+  if (!gameStore.map || !state.isFieldInitialized) return
 
   clearHighlights()
   if (!state.highlightLayer.value) return
@@ -34,8 +35,8 @@ export function showMovementRange(centerX: number, centerY: number, range: numbe
           const highlight = new Graphics()
 
           highlight
-            .rect(x * state.config.cellSize, y * state.config.cellSize, state.config.cellSize, state.config.cellSize)
-            .fill({ color: state.config.colors.highlight, alpha: 0.3 })
+            .rect(x * state.cellSize, y * state.cellSize, state.cellSize, state.cellSize)
+            .fill({ color: GameColors.highlight, alpha: 0.3 })
 
           state.highlightLayer.value.addChild(highlight)
         }

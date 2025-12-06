@@ -9,7 +9,7 @@ export interface Unit {
 
   sprite : UnitSprite
 
-  health: number
+  curHealth: number
   maxHealth: number
 }
 

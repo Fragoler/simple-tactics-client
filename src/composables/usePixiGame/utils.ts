@@ -11,10 +11,8 @@ export function getPolygonPoints(sides: number, radius: number): number[] {
 }
 
 export function screenToGrid(screenX: number, screenY: number): Position {
-  if (!state.config) return { x: 0, y: 0 }
-
   return {
-    x: Math.floor(screenX / state.config.cellSize),
-    y: Math.floor(screenY / state.config.cellSize)
+    x: Math.floor(screenX / state.cellSize),
+    y: Math.floor(screenY / state.cellSize)
   }
 }

@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/gameStore.ts'
 import { useSignalR } from '@/composables/useSignalR.ts'
 import GameCanvas from './components/GameCanvas.vue'
-import GameUI from './components/GameUI.vue';
+import GameUI from './components/GameUI/GameUI.vue';
 
 
 const gameStore = useGameStore()
@@ -22,7 +22,7 @@ function handleUnitClick(unitId: number) {
   const unit = gameStore.units.find((u: { unitId: number; }) => u.unitId === unitId)
   
   if (unit && unit.playerId === gameStore.myPlayerId) {
-    if (gameStore.selectedUnitId === unitId) {
+    if (gameStore.selectedUnit?.unitId === unitId) {
       gameStore.deselectUnit()
     } else {
       gameStore.selectUnit(unitId)
@@ -66,9 +66,9 @@ function handleUnitClick(unitId: number) {
 
 <template>
   <div class="flex h-screen bg-black p-5 gap-5">
-    <!-- Canvas -->
-    <div class="flex-1 flex items-center justify-center">
-      <div class="border-2 border-primary rounded-lg overflow-hidden shadow-lg shadow-primary/50">
+    <!-- Canvas Container -->
+    <div class="flex-1 flex items-center justify-center min-w-0 min-h-0">
+      <div class="canvas-wrapper">
         <GameCanvas 
           @unit-click="handleUnitClick"
         />
@@ -76,8 +76,22 @@ function handleUnitClick(unitId: number) {
     </div>
   
     <!-- UI Panel -->
-    <div class="w-80">
+    <div class="w-80 flex-shrink-0">
       <GameUI />
     </div>
   </div>
 </template>
+
+<style scoped>
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: calc(100vw - 400px); /* 80 (UI panel) + отступы */
+  max-height: calc(100vh - 40px); /* padding сверху и снизу */
+  border: 2px solid rgb(var(--color-primary) / 1);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgb(var(--color-primary) / 0.5);
+}
+</style>

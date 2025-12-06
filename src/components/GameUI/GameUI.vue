@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+
 import { useGameStore } from '@/stores/gameStore'
-import GameUI from './GameUI.ConnectionStatus.vue'
-import GameUIConnectionStatus from './GameUI.ConnectionStatus.vue';
-import GameUIInputTokens from './GameUI.InputTokens.vue';
+import '@/assets/game-colors.css'
+
+import ConnectionStatus from './GameUI.ConnectionStatus.vue';
+import InputTokens from './GameUI.InputTokens.vue';
+import UnitInfo from './GameUI.UnitInfo.vue'
+
 
 const emit = defineEmits<{
   endTurn: []
@@ -34,47 +37,8 @@ const getLogColor = (type: string) => {
 
 <template>
   <div class="flex flex-col gap-3 h-full">
-    <!-- Unit Info -->
-    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
-      <h3 class="text-primary font-bold text-sm mb-3 uppercase">Информация о юните</h3>
-      
-      <div v-if="gameStore.selectedUnit" class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-400">Тип:</span>
-          <!-- <span class="text-white font-semibold">{{ gameStore.selectedUnit. }}</span> -->
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-400">HP:</span>
-          <span class="text-primary font-semibold">
-            {{ gameStore.selectedUnit.health }}/{{ gameStore.selectedUnit.maxHealth }}
-          </span>
-        </div>
-        <div class="w-full bg-gray-700 h-2 rounded overflow-hidden">
-          <div 
-            :style="`width: ${(gameStore.selectedUnit.health / gameStore.selectedUnit.maxHealth) * 100}%`"
-            :class="gameStore.selectedUnit.playerId === 1 ? 'bg-primary' : 'bg-secondary'"
-            class="h-full transition-all duration-300"
-          />
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-400">Позиция:</span>
-          <span class="text-white">({{ gameStore.selectedUnit.coords.x }}, {{ gameStore.selectedUnit.coords.y }})</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-400">Игрок:</span>
-          <span 
-            :class="gameStore.selectedUnit.playerId === 1 ? 'text-primary' : 'text-secondary'"
-            class="font-semibold"
-          >
-            #{{ gameStore.selectedUnit.playerId }}
-          </span>
-        </div>
-      </div>
-      
-      <div v-else class="text-gray-500 text-sm text-center py-4">
-        Выберите юнита на поле
-      </div>
-    </div>
+    
+    <UnitInfo />
 
     <!-- Game Status -->
     <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
@@ -141,11 +105,9 @@ const getLogColor = (type: string) => {
 
 
     <!-- Connection menu -->
-    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700">
-      <div class="space-y-4">
-        <GameUIInputTokens />
-        <GameUIConnectionStatus />
-      </div>
+    <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 space-y-4">
+      <InputTokens />
+      <ConnectionStatus />
     </div>
 
     <!-- Logs -->

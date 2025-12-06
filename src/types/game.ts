@@ -1,4 +1,4 @@
-import { Unit, UnitSprite } from '@/types/unit'
+import { Unit } from '@/types/unit'
  
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
 
@@ -14,25 +14,6 @@ export interface MapState {
   name: string
   width: number
   height : number
-}
-
-export interface GameConfig {
-  cellSize: number,
-
-  colors: {
-    grid: number,
-    player1: number,
-    player2: number,
-    highlight: number,
-    selected: number
-  },
-
-  unitSprites: {
-    [key in UnitSprite]: {
-      sides: number
-      radius: number
-    }
-  }
 }
 
 export interface Player {

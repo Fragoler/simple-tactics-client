@@ -2,7 +2,6 @@
 import { ref, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { usePixiGame } from '@/composables/usePixiGame'
-import type { GameConfig } from '@/types/game'
 import type { Position } from '@/types/unit'
 
 const emit = defineEmits<{
@@ -13,25 +12,8 @@ const emit = defineEmits<{
 const gameStore = useGameStore()
 const canvasRef = ref<HTMLCanvasElement>()
 
-const config: GameConfig = {
-  cellSize: 50,
-  colors: {
-    grid: 0x333333,
-    player1: 0x00CED1,
-    player2: 0xFF8C00,
-    highlight: 0xFFFF00,
-    selected: 0x00FF00
-  },
-  unitSprites: {
-    triangle: { sides: 3, radius: 20 },
-    square: { sides: 4, radius: 20 },
-    circle: { sides: 32, radius: 20 }
-  }
-}
-
 const { 
   initApp,
-  setConfig,
   highlightUnit, 
   unhighlightUnit,
   showMovementRange,
@@ -43,13 +25,11 @@ onMounted(async () => {
   if (!canvasRef.value) return
   
   await initApp(canvasRef.value)
-  setConfig(config) 
 
   onStageClick((pos) => {
     emit('cellClick', pos)
   })
 })
-
 
 watch(() => gameStore.selectedUnitId, (newId, oldId) => {
   if (oldId) {
@@ -68,17 +48,34 @@ watch(() => gameStore.selectedUnitId, (newId, oldId) => {
 </script>
 
 <template>
-  <div class="relative w-full h-full overflow-hidden bg-gray-900">
+  <div class="game-container">
     <canvas 
       ref="canvasRef" 
-      class="block"
+      class="game-canvas"
     ></canvas>
   </div>
 </template>
 
 <style scoped>
-canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+.game-container {
+  width: 100%;
+  height: 100%;
+  background-color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.game-canvas {
+  display: block;
+  /* image-rendering: pixelated;
+  image-rendering: crisp-edges; */
+  
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 </style>

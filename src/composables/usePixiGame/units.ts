@@ -1,26 +1,26 @@
 import { Container, Graphics } from 'pixi.js'
 import type { Unit } from '@/types/unit'
 import { state } from './index'
-import { getPolygonPoints } from './utils.ts'
+import { getPolygonPoints } from './utils'
+import { GameColors } from './colors'
+import { UnitSizes } from './constants'
 
 export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
-  if (!state.app.value || !state.config || !state.isFieldInitialized) return
+  if (!state.app.value || !state.isFieldInitialized) return
 
-  const color = unit.playerId === 1 ? state.config.colors.player1 : state.config.colors.player2
+  const color = unit.playerId === 1 ? GameColors.player1 : GameColors.player2
   const container = new Container()
 
-  container.x = (unit.coords.x + 0.5) * state.config.cellSize
-  container.y = (unit.coords.y + 0.5) * state.config.cellSize
+  container.x = (unit.coords.x + 0.5) * state.cellSize
+  container.y = (unit.coords.y + 0.5) * state.cellSize
   container.interactive = true
   container.cursor = 'pointer'
 
-  // Внешний контур
-  const unitOutline = createUnitOutline(unit, color)
-  // Внутренняя заполненная часть
   const unitFill = createHealthFill(unit, color)
+  const unitOutline = createUnitOutline(unit, color)
 
-  container.addChild(unitOutline)
   container.addChild(unitFill)
+  container.addChild(unitOutline)
 
   container.on('pointerdown', (e) => {
     e.stopPropagation()
@@ -33,19 +33,19 @@ export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
 
 function createUnitOutline(unit: Unit, color: number): Graphics {
   const unitOutline = new Graphics()
+  const radius = UnitSizes.radius
+  const strokeWidth = UnitSizes.strokeWidth
 
   if (unit.sprite === 'circle') {
     unitOutline
-      .circle(0, 0, 20)
-      .stroke({ width: 2, color: color })
-      .fill({ color: color, alpha: 0.2 })
+      .circle(0, 0, radius)
+      .stroke({ width: strokeWidth, color: color })
   } else {
-    const unitConfig = state.config!.unitSprites[unit.sprite]
-    const points = getPolygonPoints(unitConfig.sides, unitConfig.radius)
+    const sides = unit.sprite === 'triangle' ? UnitSizes.triangleSides : UnitSizes.squareSides
+    const points = getPolygonPoints(sides, radius)
     unitOutline
       .poly(points)
-      .stroke({ width: 2, color: color })
-      .fill({ color: color, alpha: 0.2 })
+      .stroke({ width: strokeWidth, color: color })
   }
 
   return unitOutline
@@ -53,41 +53,50 @@ function createUnitOutline(unit: Unit, color: number): Graphics {
 
 function createHealthFill(unit: Unit, color: number): Graphics {
   const healthFill = new Graphics()
-  const healthPercent = unit.health / unit.maxHealth
+  const healthPercent = Math.max(0, Math.min(1, unit.curHealth / unit.maxHealth))
+  const radius = UnitSizes.radius
+  
+  const maxFillRadius = radius - UnitSizes.strokeWidth
+  const fillRadius = maxFillRadius * healthPercent
 
   if (unit.sprite === 'circle') {
-    const radius = 20 * healthPercent
-    healthFill.circle(0, 0, radius).fill({ color: color, alpha: 0.8 })
+    healthFill
+      .circle(0, 0, fillRadius)
+      .fill({ color: color, alpha: 0.8 })
   } else {
-    const unitConfig = state.config!.unitSprites[unit.sprite]
-    const scaledRadius = unitConfig.radius * healthPercent
-    const points = getPolygonPoints(unitConfig.sides, scaledRadius)
-    healthFill.poly(points).fill({ color: color, alpha: 0.8 })
+    const sides = unit.sprite === 'triangle' ? UnitSizes.triangleSides : UnitSizes.squareSides
+    const points = getPolygonPoints(sides, fillRadius)
+    healthFill
+      .poly(points)
+      .fill({ color: color, alpha: 0.8 })
   }
 
   return healthFill
 }
 
 export function updateUnit(unit: Unit) {
-  if (!state.config) return
-
   const container = state.unitContainers.value.get(unit.unitId) as Container<any>
   if (!container) return
 
-  const targetX = (unit.coords.x + 0.5) * state.config.cellSize
-  const targetY = (unit.coords.y + 0.5) * state.config.cellSize
+  const targetX = (unit.coords.x + 0.5) * state.cellSize
+  const targetY = (unit.coords.y + 0.5) * state.cellSize
 
   animateMove(container, targetX, targetY)
 
-  // Обновляем заполнение HP
-  const oldFill = container.children[1] as Graphics
-  const color = unit.playerId === 1 ? state.config.colors.player1 : state.config.colors.player2
+  const oldFill = container.children[0] as Graphics
+  const oldOutline = container.children[1] as Graphics
+  const color = unit.playerId === 1 ? GameColors.player1 : GameColors.player2
 
   container.removeChild(oldFill)
+  container.removeChild(oldOutline)
   oldFill.destroy()
+  oldOutline.destroy()
 
   const newFill = createHealthFill(unit, color)
-  container.addChildAt(newFill, 1)
+  const newOutline = createUnitOutline(unit, color)
+  
+  container.addChild(newFill)
+  container.addChild(newOutline)
 }
 
 function animateMove(container: Container, targetX: number, targetY: number, duration = 300) {
@@ -120,7 +129,7 @@ export function removeUnit(unitId: number) {
 }
 
 export function syncUnits(newUnits: Unit[], gameStore: any) {
-  if (!state.config || !state.isFieldInitialized) return
+  if (!state.isFieldInitialized) return
 
   const currentIds = new Set(newUnits.map((u) => u.unitId))
   for (const [id] of state.unitContainers.value) {
