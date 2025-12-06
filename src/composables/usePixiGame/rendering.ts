@@ -57,7 +57,7 @@ export function drawBorder() {
     gameStore.map.height * state.cellSize
   ).stroke({ 
     width: borderWidth, 
-    color: GameColors.player1, // Или другой цвет
+    color: GameColors.nonplayer, 
     alpha: 1 
   })
 

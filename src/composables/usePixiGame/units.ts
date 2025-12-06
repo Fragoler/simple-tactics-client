@@ -2,13 +2,13 @@ import { Container, Graphics } from 'pixi.js'
 import type { Unit } from '@/types/unit'
 import { state } from './index'
 import { getPolygonPoints } from './utils'
-import { GameColors } from './colors'
+import { getPlayerColor } from './colors'
 import { UnitSizes } from './constants'
 
 export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
   if (!state.app.value || !state.isFieldInitialized) return
 
-  const color = unit.playerId === 1 ? GameColors.player1 : GameColors.player2
+  const color = getPlayerColor(unit.playerId)
   const container = new Container()
 
   container.x = (unit.coords.x + 0.5) * state.cellSize
@@ -85,7 +85,7 @@ export function updateUnit(unit: Unit) {
 
   const oldFill = container.children[0] as Graphics
   const oldOutline = container.children[1] as Graphics
-  const color = unit.playerId === 1 ? GameColors.player1 : GameColors.player2
+  const color = getPlayerColor(unit.playerId)
 
   container.removeChild(oldFill)
   container.removeChild(oldOutline)

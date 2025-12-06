@@ -20,12 +20,23 @@ export const GameColors = {
   get player2() {
     return getCSSColor('--game-player2')
   },
+  get nonplayer() {
+    return getCSSColor('--game-nonplayer')
+  },
   get highlight() {
     return getCSSColor('--game-highlight')
   },
   get selected() {
     return getCSSColor('--game-selected')
   }
+}
+
+export function getPlayerColor(playerId: number | null): number
+{
+  if (playerId === null)
+    return GameColors.nonplayer
+
+  return playerId === 0 ? GameColors.player1 : GameColors.player2
 }
 
 export function getCellColor(value: number): number {
