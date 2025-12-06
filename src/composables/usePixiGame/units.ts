@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js'
 import type { Unit } from '@/types/unit'
 import { state } from './index'
 import { getPolygonPoints } from './utils'
-import { getPlayerColor } from './colors'
+import { getPlayerColor } from '@/assets/colors'
 import { CellSize, UnitParams } from './constants'
 
 export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {

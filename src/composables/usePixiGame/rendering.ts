@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
-import { GameColors, getCellColor } from './colors'
+import { GameColors, getCellColor } from '@/assets/colors'
 import { CellSize } from './constants'
 
 export function drawMap() {

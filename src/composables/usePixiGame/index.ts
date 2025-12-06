@@ -7,7 +7,7 @@ import { drawMap } from './rendering'
 import { syncUnits } from './units'
 import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights'
 import { screenToGrid } from './utils'
-import { GameColors } from './colors'
+import { GameColors } from '@/assets/colors'
 import { CellSize } from './constants'
 
 export const state = {

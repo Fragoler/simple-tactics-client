@@ -2,7 +2,7 @@
 import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
-import { GameColors } from './colors'
+import { GameColors } from '../../assets/colors'
 import { UnitParams, MoveRangeHighlightsParams, CellSize } from './constants'
 
 
@@ -78,8 +78,11 @@ export function showMovementRange(centerX: number, centerY: number, range: numbe
           const highlight = new Graphics()
 
           highlight
-            .rect((x + 0.5 - 0.125) * CellSize, (y +  0.5 - 0.125) * CellSize, CellSize * 0.25, CellSize * 0.25)
-            .fill({ color: GameColors.highlight, alpha: 0.3 })
+            .rect((x + MoveRangeHighlightsParams.CoordsOffset) * CellSize,
+                  (y + MoveRangeHighlightsParams.CoordsOffset) * CellSize,
+                  MoveRangeHighlightsParams.Side,
+                  MoveRangeHighlightsParams.Side)
+            .fill({ color: GameColors.highlight, alpha: MoveRangeHighlightsParams.Alpha})
 
           moveRangeHighlights.push(highlight)
           state.highlightLayer.value!.addChild(highlight)

@@ -20,11 +20,11 @@ const gameStore = useGameStore()
 					
 				
 					<span v-if="player.playerId !== gameStore.myPlayerId"
-								:class="player.playerId === 1 ? 'text-primary' : 'text-secondary'" class="font-semibold">
+								:class="player.playerId === 0 ? 'text-primary' : 'text-secondary'" class="font-semibold">
 						{{ player.playerName }}
 					</span>
 					<span v-else
-								:class="player.playerId === 1 ? 'text-primary' : 'text-secondary'" class="font-semibold">
+								:class="player.playerId === 0 ? 'text-primary' : 'text-secondary'" class="font-semibold">
 						Me
 					</span>
 

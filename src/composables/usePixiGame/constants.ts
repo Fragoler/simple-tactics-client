@@ -13,5 +13,7 @@ export const UnitParams = {
 
 
 export const MoveRangeHighlightsParams = {
-  
+  CoordsOffset: 0.375,
+  Side: CellSize * 0.25,
+  Alpha: 0.3
 }
