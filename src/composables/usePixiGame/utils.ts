@@ -1,5 +1,5 @@
 import type { Position } from '@/types/unit'
-import { state } from './index'
+import { CellSize } from './constants'
 
 export function getPolygonPoints(sides: number, radius: number): number[] {
   const points: number[] = []
@@ -12,7 +12,7 @@ export function getPolygonPoints(sides: number, radius: number): number[] {
 
 export function screenToGrid(screenX: number, screenY: number): Position {
   return {
-    x: Math.floor(screenX / state.cellSize),
-    y: Math.floor(screenY / state.cellSize)
+    x: Math.floor(screenX / CellSize),
+    y: Math.floor(screenY / CellSize)
   }
 }

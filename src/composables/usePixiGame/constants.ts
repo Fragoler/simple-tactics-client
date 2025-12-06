@@ -1,12 +1,8 @@
-import { state } from './index'
+export const CellSize = 50
 
 export const UnitParams = {
-  get radius() {
-    return state.cellSize * 0.4
-  },
-  get strokeWidth() {
-    return Math.max(2, state.cellSize * 0.04)
-  },
+  radius: CellSize * 0.4,
+  strokeWidth: Math.max(2, CellSize * 0.04),
   triangleSides: 3,
   squareSides: 4,
   circleSides: 32,
@@ -15,3 +11,7 @@ export const UnitParams = {
   fillAlpha: 0.8,
 } as const
 
+
+export const MoveRangeHighlightsParams = {
+  
+}

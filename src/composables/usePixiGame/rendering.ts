@@ -2,6 +2,7 @@ import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
 import { GameColors, getCellColor } from './colors'
+import { CellSize } from './constants'
 
 export function drawMap() {
   const gameStore = useGameStore()
@@ -35,8 +36,8 @@ function drawBackground() {
   bg.rect(
     0,
     0,
-    gameStore.map.width * state.cellSize,
-    gameStore.map.height * state.cellSize
+    gameStore.map.width * CellSize,
+    gameStore.map.height * CellSize
   ).fill({ color: GameColors.background })
 
   state.backgroundLayer.value.addChild(bg)
@@ -48,20 +49,20 @@ function drawGrid() {
   if (!gameStore.map || !state.gridLayer.value) return
 
   const grid = new Graphics()
-  const gridStrokeWidth = Math.max(1, state.cellSize * 0.02)
+  const gridStrokeWidth = Math.max(1, CellSize * 0.02)
 
   // Vertical lines
   for (let x = 0; x <= gameStore.map.width; x++) {
-    const xPos = x * state.cellSize
+    const xPos = x * CellSize
     grid.moveTo(xPos, 0)
-    grid.lineTo(xPos, gameStore.map.height * state.cellSize)
+    grid.lineTo(xPos, gameStore.map.height * CellSize)
   }
 
   // Horisontal lines
   for (let y = 0; y <= gameStore.map.height; y++) {
-    const yPos = y * state.cellSize
+    const yPos = y * CellSize
     grid.moveTo(0, yPos)
-    grid.lineTo(gameStore.map.width * state.cellSize, yPos)
+    grid.lineTo(gameStore.map.width * CellSize, yPos)
   }
 
   grid.stroke({ width: gridStrokeWidth, color: GameColors.grid, alpha: 0.5 })
@@ -73,13 +74,13 @@ function drawBorder() {
   if (!gameStore.map || !state.gridLayer.value) return
 
   const border = new Graphics()
-  const borderWidth = Math.max(3, state.cellSize * 0.06)
+  const borderWidth = Math.max(3, CellSize * 0.06)
 
   border.rect(
     0,
     0,
-    gameStore.map.width * state.cellSize,
-    gameStore.map.height * state.cellSize
+    gameStore.map.width * CellSize,
+    gameStore.map.height * CellSize
   ).stroke({ 
     width: borderWidth, 
     color: GameColors.nonplayer, 
@@ -105,10 +106,10 @@ function drawMapCells() {
 
         cellGraphics
           .rect(
-            x * state.cellSize,
-            y * state.cellSize,
-            state.cellSize,
-            state.cellSize
+            x * CellSize,
+            y * CellSize,
+            CellSize,
+            CellSize
           )
           .fill({ color: cellColor, alpha: 0.5 })
 

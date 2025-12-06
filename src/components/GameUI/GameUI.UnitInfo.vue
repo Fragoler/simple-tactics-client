@@ -20,14 +20,14 @@ function getUnitControllerPlayer(unit : Unit)
 			<div class="w-full bg-gray-700 h-2 rounded overflow-hidden">
 				<div 
 					:style="`width: ${(gameStore.selectedUnit.curHealth / gameStore.selectedUnit.maxHealth) * 100}%`"
-					:class="gameStore.selectedUnit.playerId === 1 ? 'bg-primary' : 'bg-secondary'"
+					:class="gameStore.selectedUnit.playerId === 0 ? 'bg-primary' : 'bg-secondary'"
 					class="h-full transition-all duration-300"
 				/>
 			</div>
 
 			<div class="flex justify-between">
 				<span class="text-gray-400">HP:</span>
-				<span class="text-primary font-semibold">
+				<span class="font-semibold">
 					{{ gameStore.selectedUnit.curHealth }}/{{ gameStore.selectedUnit.maxHealth }}
 				</span>
 			</div>

@@ -1,29 +1,71 @@
-import { Container, Graphics } from 'pixi.js'
+// highlights.ts
+import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
 import { GameColors } from './colors'
+import { UnitParams, MoveRangeHighlightsParams, CellSize } from './constants'
 
 
-export function highlightUnit(unitId: number) {
-  const container = state.unitContainers.value.get(unitId) as Container<any>
-  if (container) {
-    container.scale.set(1.2)
+const highlightedUnits = new Map<number, Graphics>()
+const moveRangeHighlights = new Array<Graphics>()
+
+export function highlightUnit(unitId: number) {  
+  const container = state.unitContainers.value.get(unitId)
+  if (!container || container.destroyed) {
+    console.error("Container is invalid")
+    return
+  }
+
+  
+  // TODO: Make it lesser hardcodded
+  const glow = new Graphics()
+  
+  const baseRadius = UnitParams.radius * 0.2
+  const glowLayers = 10
+  
+  for (let i = glowLayers; i > 0; i--) {
+    const radius = baseRadius * (1 + i * 0.7)
+    const alpha = 0.1 / Math.sqrt(i)
+    
+    glow
+      .circle(0, 0, radius)
+      .fill({ color: GameColors.selected, alpha: alpha })
+  }
+  
+  glow.x = container.x
+  glow.y = container.y
+  
+  if (state.highlightLayer.value) {
+    state.highlightLayer.value.addChild(glow)
+    highlightedUnits.set(unitId, glow)
   }
 }
 
 export function unhighlightUnit(unitId: number) {
-  const container = state.unitContainers.value.get(unitId) as Container<any>
-  if (container) {
-    container.scale.set(1)
+  const highlight = highlightedUnits.get(unitId)
+  if (highlight) {
+    highlight.removeFromParent()
+    highlight.destroy()
+    highlightedUnits.delete(unitId)
   }
+}
+
+export function clearHighlights() {
+  highlightedUnits.forEach((_, key) => {
+    unhighlightUnit(key)
+  });
+  
+  hideMovementRange()
+
+  // Debug assert warn
+  if (state.highlightLayer.value?.children &&
+      state.highlightLayer.value?.children.length > 0)
+    console.warn("highlight layer is not empty after cleaning")
 }
 
 export function showMovementRange(centerX: number, centerY: number, range: number) {
   const gameStore = useGameStore()
   if (!gameStore.map || !state.isLayersInitialized) return
-
-  clearHighlights()
-  if (!state.highlightLayer.value) return
 
   for (let dx = -range; dx <= range; dx++) {
     for (let dy = -range; dy <= range; dy++) {
@@ -36,16 +78,22 @@ export function showMovementRange(centerX: number, centerY: number, range: numbe
           const highlight = new Graphics()
 
           highlight
-            .rect(x * state.cellSize, y * state.cellSize, state.cellSize, state.cellSize)
+            .rect((x + 0.5 - 0.125) * CellSize, (y +  0.5 - 0.125) * CellSize, CellSize * 0.25, CellSize * 0.25)
             .fill({ color: GameColors.highlight, alpha: 0.3 })
 
-          state.highlightLayer.value.addChild(highlight)
+          moveRangeHighlights.push(highlight)
+          state.highlightLayer.value!.addChild(highlight)
         }
       }
     }
   }
 }
 
-export function clearHighlights() {
-  state.highlightLayer.value?.removeChildren()
-}
+function hideMovementRange()
+{
+  let graph : Graphics | undefined
+  while (graph = moveRangeHighlights.pop()) {
+    graph.removeFromParent()
+    graph.destroy()
+  }
+};

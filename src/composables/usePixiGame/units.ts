@@ -3,7 +3,7 @@ import type { Unit } from '@/types/unit'
 import { state } from './index'
 import { getPolygonPoints } from './utils'
 import { getPlayerColor } from './colors'
-import { UnitParams } from './constants'
+import { CellSize, UnitParams } from './constants'
 
 export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
   if (!state.isLayersInitialized) return
@@ -11,8 +11,8 @@ export function addUnit(unit: Unit, onClick: (unit: Unit) => void) {
   const color = getPlayerColor(unit.playerId)
   const container = new Container()
 
-  container.x = (unit.coords.x + 0.5) * state.cellSize
-  container.y = (unit.coords.y + 0.5) * state.cellSize
+  container.x = (unit.coords.x + 0.5) * CellSize
+  container.y = (unit.coords.y + 0.5) * CellSize
   container.interactive = true
   container.cursor = 'pointer'
 
@@ -69,13 +69,13 @@ function updateUnitFill(unit: Unit, color: number, childId: number = 0): Graphic
   if (unit.sprite === 'circle') {
     unitFill
       .circle(0, 0, fillRadius)
-      .fill({ color: color, alpha: 0.8 })
+      .fill({ color: color, alpha: 1 })
   } else {
     const sides = unit.sprite === 'triangle' ? UnitParams.triangleSides : UnitParams.squareSides
     const points = getPolygonPoints(sides, fillRadius)
     unitFill
       .poly(points)
-      .fill({ color: color, alpha: 0.8 })
+      .fill({ color: color, alpha: 1 })
   }
 
   return unitFill
@@ -85,8 +85,8 @@ export function updateUnit(unit: Unit) {
   const container = state.unitContainers.value.get(unit.unitId) as Container<any>
   if (!container) return
 
-  const targetX = (unit.coords.x + 0.5) * state.cellSize
-  const targetY = (unit.coords.y + 0.5) * state.cellSize
+  const targetX = (unit.coords.x + 0.5) * CellSize
+  const targetY = (unit.coords.y + 0.5) * CellSize
 
   animateMove(container, targetX, targetY)
 
@@ -118,10 +118,15 @@ function animateMove(container: Container, targetX: number, targetY: number, dur
 
 export function removeUnit(unitId: number) {
   const container = state.unitContainers.value.get(unitId) as Container<any>
-  if (container) {
+  if (!container)
+    return 
+  
+  state.unitContainers.value.delete(unitId)
+
+  if (!container.destroyed)
+  {
     container.removeFromParent()
     container.destroy(true)
-    state.unitContainers.value.delete(unitId)
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { usePixiGame } from '@/composables/usePixiGame'
 import type { Position } from '@/types/unit'
@@ -31,12 +31,16 @@ onMounted(async () => {
   })
 })
 
-watch(() => gameStore.selectedUnit?.unitId, (newId, oldId) => {
+watch(() => gameStore.selectedUnit?.unitId, async (newId, oldId) => {
+  await nextTick()
+
   if (oldId) {
     unhighlightUnit(oldId)
     clearHighlights()
   }
   
+  await nextTick()
+
   if (newId) {
     highlightUnit(newId)
     const unit = gameStore.units.find(u => u.unitId === newId)

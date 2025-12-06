@@ -1,5 +1,5 @@
 import { ref, onUnmounted, watch } from 'vue'
-import type { Position, Unit } from '@/types/unit'
+import type { Position } from '@/types/unit'
 import { Application, Container } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { initializeLayers } from './layers'
@@ -8,6 +8,7 @@ import { syncUnits } from './units'
 import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights'
 import { screenToGrid } from './utils'
 import { GameColors } from './colors'
+import { CellSize } from './constants'
 
 export const state = {
   app:             ref<Application | null>(null),
@@ -15,8 +16,7 @@ export const state = {
   highlightLayer:  ref<Container>(),
   gridLayer:       ref<Container>(),
   backgroundLayer: ref<Container>(),
-  unitLayer:       ref<Container>(),
-  cellSize:        50, 
+  unitLayer:       ref<Container>(), 
   isLayersInitialized: false
 }
 
@@ -91,8 +91,8 @@ export function usePixiGame() {
   function resize() {
     if (!state.app.value || !gameStore.map) return
 
-    const newWidth = gameStore.map.width * state.cellSize
-    const newHeight = gameStore.map.height * state.cellSize
+    const newWidth = gameStore.map.width * CellSize
+    const newHeight = gameStore.map.height * CellSize
 
     console.log('Canvas size:', newWidth, 'x', newHeight)
 
