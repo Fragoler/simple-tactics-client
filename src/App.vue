@@ -1,56 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import { useGameStore } from '@/stores/gameStore.ts'
+import { onUnmounted } from 'vue'
 import { useSignalR } from '@/composables/useSignalR.ts'
 import GameCanvas from './components/GameCanvas.vue'
 import GameUI from './components/GameUI/GameUI.vue';
 
-
-const gameStore = useGameStore()
-const { connect, disconnect } = useSignalR()
-
-onMounted(async () => {
-  
-})
+const { disconnect } = useSignalR()
 
 onUnmounted(() => {
   disconnect()
 })
 
-//#region handle player actions
-function handleUnitClick(unitId: number) {
-  const unit = gameStore.units.find((u: { unitId: number; }) => u.unitId === unitId)
-  
-  if (unit && unit.playerId === gameStore.myPlayerId) {
-    if (gameStore.selectedUnit?.unitId === unitId) {
-      gameStore.deselectUnit()
-    } else {
-      gameStore.selectUnit(unitId)
-    }
-  }
-}
-
-// async function handleCellClick(pos: Position) {
-//   if (!gameStore.selectedUnit) return
-//   if (!gameStore.isMyTurn) {
-//     gameStore.addLog('⚠️ Сейчас не ваш ход!', 'warning')
-//     return
-//   }
-
-//   try {
-//     await sendUnitAction({
-//       unitId: gameStore.selectedUnit.unitId,
-//       actionType: 'move',
-//       targetX: pos.x,
-//       targetY: pos.y
-//     })
-    
-//     gameStore.deselectUnit()
-//   } catch (error) {
-//     console.error('Move error:', error)
-//   }
-// }
-//#endregion
 </script>
 
 <template>
@@ -58,9 +17,7 @@ function handleUnitClick(unitId: number) {
     <!-- Canvas Container -->
     <div class="flex-1 flex items-center justify-center min-w-0 min-h-0">
       <div class="canvas-wrapper">
-        <GameCanvas 
-          @unit-click="handleUnitClick"
-        />
+        <GameCanvas />
       </div>
     </div>
   
@@ -76,8 +33,8 @@ function handleUnitClick(unitId: number) {
   position: relative;
   width: 100%;
   height: 100%;
-  max-width: calc(100vw - 400px); /* 80 (UI panel) + отступы */
-  max-height: calc(100vh - 40px); /* padding сверху и снизу */
+  max-width: calc(100vw - 400px);
+  max-height: calc(100vh - 40px);
   border: 2px solid rgb(var(--color-primary) / 1);
   border-radius: 0.5rem;
   overflow: hidden;

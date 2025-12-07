@@ -11,17 +11,11 @@ export interface Unit {
 
   curHealth: number
   maxHealth: number
+
+  actionIds: string[]   
 }
 
 export interface Position {
   x: number
   y: number
-}
-
-export interface UnitAction {
-  unitId: number
-  actionType: ActionType
-  targetX?: number
-  targetY?: number
-  targetUnitId?: number
 }

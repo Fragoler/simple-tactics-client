@@ -1,5 +1,4 @@
-import { ref, onUnmounted, watch } from 'vue'
-import type { Position } from '@/types/unit'
+import { ref, watch } from 'vue'
 import { Application, Container } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { initializeLayers } from './layers'
@@ -7,8 +6,9 @@ import { drawMap } from './rendering'
 import { syncUnits } from './units'
 import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights'
 import { screenToGrid } from './utils'
-import { GameColors } from '@/assets/colors'
+import { ColorVars, getCSSColor } from '@/assets/colors'
 import { CellSize } from './constants'
+import { useGameInput } from '../useGameInput'
 
 export const state = {
   app:             ref<Application | null>(null),
@@ -21,17 +21,11 @@ export const state = {
 }
 
 export function usePixiGame() {
-  const gameStore = useGameStore()
 
   async function initApp(canvasElement: HTMLCanvasElement) {
+    const { setupInputHandlers } = useGameInput()
+
     if (state.app.value) return
-
-    console.log('Background color:', GameColors.background)
-
-    if (isNaN(GameColors.background)) {
-      console.error('CSS colors not loaded properly!')
-      return
-    }
 
     state.app.value = new Application()
 
@@ -39,7 +33,7 @@ export function usePixiGame() {
       canvas: canvasElement,
       width: 100,
       height: 100,
-      backgroundColor: GameColors.background,
+      backgroundColor: getCSSColor(ColorVars.general.background),
       antialias: true,
       resolution: window.devicePixelRatio || 1,
     })
@@ -47,10 +41,13 @@ export function usePixiGame() {
     state.app.value.stage.interactive = true
     state.app.value.stage.hitArea = state.app.value.screen
 
-    setupWatchers(gameStore)
+    setupWatchers()
+    setupInputHandlers()
   }
 
-  function setupWatchers(gameStore: any) {
+  function setupWatchers() {
+    const gameStore = useGameStore()
+
     watch(
       () => gameStore.map,
       (newMapState) => {
@@ -74,7 +71,7 @@ export function usePixiGame() {
       (newUnits) => {
         console.log('Units changed:', newUnits)
         if (state.isLayersInitialized) {
-          syncUnits(newUnits, gameStore)
+          syncUnits(newUnits)
         }
       },
       { deep: true, immediate: true }
@@ -89,6 +86,8 @@ export function usePixiGame() {
   }
 
   function resize() {
+    const gameStore = useGameStore()
+  
     if (!state.app.value || !gameStore.map) return
 
     const newWidth = gameStore.map.width * CellSize
@@ -100,15 +99,9 @@ export function usePixiGame() {
     state.app.value.stage.hitArea = state.app.value.screen
   }
 
-  function onStageClick(callback: (pos: Position) => void) {
-    if (!state.app.value) return
-
-    state.app.value.stage.on('pointerdown', (event) => {
-      callback(screenToGrid(event.globalX, event.globalY))
-    })
-  }
-
   function destroy() {
+    const { removeInputHandlers } = useGameInput()
+
     if (state.app.value) {
       state.app.value.destroy(true)
       state.app.value = null
@@ -116,13 +109,11 @@ export function usePixiGame() {
     
     state.unitContainers.value.clear()
     state.isLayersInitialized = false
+    removeInputHandlers()
   }
 
-  onUnmounted(() => {
-    destroy()
-  })
-
   return {
+    app: state.app,
     initApp,
     drawMap,
     highlightUnit,
@@ -130,7 +121,6 @@ export function usePixiGame() {
     showMovementRange,
     clearHighlights,
     screenToGrid,
-    onStageClick,
-    destroy
+    destroy,
   }
 }

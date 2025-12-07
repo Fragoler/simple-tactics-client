@@ -1,7 +1,7 @@
 import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
-import { GameColors, getCellColor } from '@/assets/colors'
+import { getCSSColor, ColorVars, getCellColor } from '@/assets/colors'
 import { CellSize } from './constants'
 
 export function drawMap() {
@@ -38,7 +38,7 @@ function drawBackground() {
     0,
     gameStore.map.width * CellSize,
     gameStore.map.height * CellSize
-  ).fill({ color: GameColors.background })
+  ).fill({ color: getCSSColor(ColorVars.general.background) })
 
   state.backgroundLayer.value.addChild(bg)
 }
@@ -65,7 +65,7 @@ function drawGrid() {
     grid.lineTo(gameStore.map.width * CellSize, yPos)
   }
 
-  grid.stroke({ width: gridStrokeWidth, color: GameColors.grid, alpha: 0.5 })
+  grid.stroke({ width: gridStrokeWidth, color: getCSSColor(ColorVars.general.grid), alpha: 0.5 })
   state.gridLayer.value.addChild(grid)
 }
 
@@ -83,7 +83,7 @@ function drawBorder() {
     gameStore.map.height * CellSize
   ).stroke({ 
     width: borderWidth, 
-    color: GameColors.nonplayer, 
+    color: getCSSColor(ColorVars.general.grid), 
     alpha: 1 
   })
 

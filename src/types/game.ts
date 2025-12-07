@@ -1,4 +1,5 @@
 import { Unit } from '@/types/unit'
+import { ActionDefinition } from './action'
  
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
 

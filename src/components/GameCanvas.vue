@@ -4,11 +4,6 @@ import { useGameStore } from '@/stores/gameStore'
 import { usePixiGame } from '@/composables/usePixiGame'
 import type { Position } from '@/types/unit'
 
-const emit = defineEmits<{
-  unitClick: [unitId: number]
-  cellClick: [pos: Position]
-}>()
-
 const gameStore = useGameStore()
 const canvasRef = ref<HTMLCanvasElement>()
 
@@ -17,29 +12,20 @@ const {
   highlightUnit, 
   unhighlightUnit,
   showMovementRange,
-  clearHighlights,
-  onStageClick 
+  clearHighlights 
 } = usePixiGame()
 
 onMounted(async () => {
   if (!canvasRef.value) return
   
   await initApp(canvasRef.value)
-
-  onStageClick((pos) => {
-    emit('cellClick', pos)
-  })
 })
 
 watch(() => gameStore.selectedUnit?.unitId, async (newId, oldId) => {
-  await nextTick()
-
   if (oldId) {
     unhighlightUnit(oldId)
     clearHighlights()
   }
-  
-  await nextTick()
 
   if (newId) {
     highlightUnit(newId)

@@ -1,0 +1,19 @@
+:root {
+  /* General */
+  --game-general-bg:        #1a1a2e;
+  --game-general-grid:      #333333;
+  --game-general-wall:      #2d3a4a;
+  --game-general-player1:   #00CED1;
+  --game-general-player2:   #FF8C00;
+  --game-general-nonplayer: #a8aaab;
+  --game-general-highlight: #FFFF00;
+  --game-general-selected:  #00FF00;
+
+  /* Actions */
+  --game-action-selection: #00ced1;
+  --game-action-movement:  #ffd700;
+  --game-action-damage:    #ff0000;
+  --game-action-heal:      #00ff88;
+  --game-action-buff:      #64ffff;
+  --game-action-debuff:    #9400d3;
+}

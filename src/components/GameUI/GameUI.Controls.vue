@@ -1,34 +1,89 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/gameStore';
+import { computed } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
+import { useActionStore } from '@/stores/actionStore'
+import { useActionHighlight } from '@/composables/useActionHighlight'
 
 const gameStore = useGameStore()
+const actionStore = useActionStore()
+const { showActionHighlights } = useActionHighlight()
 
+const actions = computed(() => {
+  if (!gameStore.selectedUnit) return []
+  return actionStore.getActionsForUnit(gameStore.selectedUnit.unitId)
+})
 
-async function endTurn() {
-  if (!gameStore.isPlanningPhase) return
-	
-  try {
-    gameStore.deselectUnit()
-  } catch (error) {
-    console.error('End turn error:', error)
+const hasUnitsWithoutActions = computed(() => {
+  return gameStore.units.some(
+    u => u.playerId === gameStore.myPlayerId &&
+         !actionStore.unitHasAction(u.unitId)
+  )
+})
+
+function onActionClick(actionId: string) {
+  if (!gameStore.selectedUnit) return
+
+  actionStore.selectAction(actionId)
+
+  if (!actionStore.unitHasAction(gameStore.selectedUnit.unitId)) {
+    actionStore.scheduleAction(gameStore.selectedUnit.unitId, actionId)
   }
+
+  showActionHighlights(gameStore.selectedUnit.unitId)
 }
 
+function undoAction() {
+  if (!gameStore.selectedUnit) return
+  actionStore.cancelAction(gameStore.selectedUnit.unitId)
+}
+
+function endTurn() {
+  gameStore.endTurn()
+}
 </script>
 
+
+
 <template>
-	<div class="bg-gray-900 p-4 rounded-lg border border-gray-700 flex gap-2">
-		<button 
-			@click="endTurn"
-			:disabled="!gameStore.isPlanningPhase"
-			class="bg-primary text-black text-xs font-bold px-4 py-2 rounded-lg hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-		>
-				✓&nbsp;Завершить ход
-		</button>
-		<button 
-			class="bg-gray-700 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
-		>
-				↶&nbsp;Отменить действие
-			</button>
-	</div>
+  <div class="bg-gray-900 p-3 rounded-lg border border-gray-700">
+    <!-- Row : Unit action -->
+    <div class="grid grid-cols-3 gap-2 mb-2">
+      <button
+        v-for="action in actions"
+        :key="action.id"
+        @click="onActionClick(action.id)"
+        :disabled="!gameStore.selectedUnit"
+        :class="[
+          'text-xs font-bold py-2 rounded transition-all',
+          actionStore.selectedAction?.id === action.id
+            ? 'bg-primary text-black ring-2 ring-cyan-400'
+            : 'bg-gray-700 text-white hover:bg-gray-600',
+          !gameStore.selectedUnit && 'opacity-50 cursor-not-allowed'
+        ]"
+      >
+        {{ action.icon }} {{ action.name }}
+      </button>
+    </div>
+
+    <!-- Row : Controls -->
+    <div class="grid grid-cols-2 gap-2">
+      <button
+        @click="undoAction"
+        :disabled="!gameStore.selectedUnit || 
+                   !actionStore.unitHasAction(gameStore.selectedUnit.unitId)"
+        class="bg-gray-700 text-white text-xs font-semibold py-2 rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
+        ↶ Отменить
+      </button>
+
+      <button
+        @click="endTurn"
+        :disabled="hasUnitsWithoutActions || !gameStore.isPlanningPhase"
+        :title="hasUnitsWithoutActions ? 'Все юниты должны иметь действие' : ''"
+        class="bg-primary text-black text-xs font-bold py-2 rounded hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
+        ✓ Завершить ход
+      </button>
+    </div>
+  </div>
 </template>

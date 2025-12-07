@@ -2,7 +2,7 @@
 import { Graphics } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { state } from './index'
-import { GameColors } from '../../assets/colors'
+import { ColorVars, getCSSColor } from '../../assets/colors'
 import { UnitParams, MoveRangeHighlightsParams, CellSize } from './constants'
 
 
@@ -29,7 +29,7 @@ export function highlightUnit(unitId: number) {
     
     glow
       .circle(0, 0, radius)
-      .fill({ color: GameColors.selected, alpha: alpha })
+      .fill({ color: getCSSColor(ColorVars.general.selected), alpha: alpha })
   }
   
   glow.x = container.x
@@ -82,7 +82,7 @@ export function showMovementRange(centerX: number, centerY: number, range: numbe
                   (y + MoveRangeHighlightsParams.CoordsOffset) * CellSize,
                   MoveRangeHighlightsParams.Side,
                   MoveRangeHighlightsParams.Side)
-            .fill({ color: GameColors.highlight, alpha: MoveRangeHighlightsParams.Alpha})
+            .fill({ color: getCSSColor(ColorVars.general.highlight), alpha: MoveRangeHighlightsParams.Alpha})
 
           moveRangeHighlights.push(highlight)
           state.highlightLayer.value!.addChild(highlight)
