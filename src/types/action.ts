@@ -28,13 +28,12 @@ export type RelativeType =
 
 export type TargetType = 
   | 'Cell' 
-  | 'Unit' 
   | 'None'
 
 export interface HighlightLayer {
   pattern: Pattern
   range: number
-  relativeTo: RelativeType
+  relative: RelativeType
   type: HighlightType
   visibility: HighlightVisibility
 }

@@ -3,6 +3,7 @@ import { useActionStore } from '@/stores/actionStore'
 import { state, usePixiGame } from './usePixiGame'
 import { useActionSystem } from './useActionSystem'
 import { ActionDefinition, HighlightLayer } from '@/types/action'
+import { Position } from '@/types/unit'
 
 
 export function useActionHighlight() {
@@ -24,15 +25,24 @@ export function useActionHighlight() {
     const action = actionStore.getActionById(scheduled.actionId)
     if (!action || !state.highlightLayer.value) return
 
-    const target = scheduled.target?.cell
     const confirmed_ = scheduled.confirmed
 
     const layers = getHighlightLayers(action, confirmed_)
     for (const layer of layers) {
-      const basePos = layer.relativeTo === 'Executor' 
-        ? unit.coords 
-        : target || unit.coords
+      console.log("LAYER", layer)
+      let basePos: Position
+      if (layer.relative === 'Executor')
+        basePos = unit.coords
+      else
+      {
+        // Relative to target
+        if (scheduled.target && action.targetType === 'Cell' && scheduled.target.cell)
+          basePos = scheduled.target.cell
+        else
+          continue
+      }
 
+      console.log("Here", layer)
       const positions = actionSystem.getPositionsByPattern(basePos, layer.pattern, layer.range, action.targetFilter)
       pixi.drawActionLayer(positions, layer.type)
     }

@@ -45,7 +45,7 @@ export function useActionSystem() {
     action: ActionDefinition,
     executor: Unit
   ): Position[] {
-    const layers: HighlightLayer[] = action.highlightLayers.filter(l => l.relativeTo === 'Executor')
+    const layers: HighlightLayer[] = action.highlightLayers.filter(l => l.relative === 'Executor')
     if (!layers) return []
 
     getPositionsByPattern(
@@ -61,7 +61,7 @@ export function useActionSystem() {
     action: ActionDefinition,
     target: Position | Unit
   ): boolean {
-    const layer = action.highlightLayers.find(l => l.relativeTo === 'Executor')
+    const layer = action.highlightLayers.find(l => l.relative === 'Executor')
     if (!layer) return true
 
     const positions = getPositionsByPattern(
