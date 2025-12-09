@@ -19,9 +19,9 @@ export function useGameInput() {
   }
 
   function handleStageClick(event: FederatedPointerEvent) {
-    const { screenToGrid } = usePixiGame()
+    const pixi = usePixiGame()
 
-    const pos = screenToGrid(event.globalX, event.globalY)
+    const pos = pixi.screenToGrid(event.globalX, event.globalY)
     const unit = findUnitAt(pos)
     
     if (unit) {
@@ -32,12 +32,12 @@ export function useGameInput() {
   }
 
   function handleRightClick(event: FederatedPointerEvent) {
-    const { screenToGrid } = usePixiGame()
+    const pixi = usePixiGame()
     const gameStore = useGameStore()
 
     event.preventDefault()
     
-    const pos = screenToGrid(event.globalX, event.globalY)
+    const pos = pixi.screenToGrid(event.globalX, event.globalY)
     const unit = findUnitAt(pos)
     
     if (unit && gameStore.selectedUnit) {
@@ -47,9 +47,9 @@ export function useGameInput() {
   }
 
   function handlePointerMove(event: FederatedPointerEvent) {
-    const { screenToGrid } = usePixiGame()
+    const pixi = usePixiGame()
 
-    const pos = screenToGrid(event.globalX, event.globalY)
+    const pos = pixi.screenToGrid(event.globalX, event.globalY)
     
     //TODO: Show action preview
   }

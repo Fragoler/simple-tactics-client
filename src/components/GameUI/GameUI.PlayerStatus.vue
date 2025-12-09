@@ -19,13 +19,8 @@ const gameStore = useGameStore()
 				<div class="flex">
 					
 				
-					<span v-if="player.playerId !== gameStore.myPlayerId"
-								:class="player.playerId === 0 ? 'text-primary' : 'text-secondary'" class="font-semibold">
-						{{ player.playerName }}
-					</span>
-					<span v-else
-								:class="player.playerId === 0 ? 'text-primary' : 'text-secondary'" class="font-semibold">
-						Me
+					<span :class="player.playerId === 0 ? 'text-primary' : 'text-secondary'" class="font-semibold">
+						{{ player.playerName }} &hairsp;  {{ player.playerId === gameStore.myPlayerId ? "⭐": "" }}
 					</span>
 
 					<span v-if="player.isReady" class="text-green-400 text-xs">Готов</span>

@@ -21,5 +21,6 @@ import UnitInfo from './GameUI.UnitInfo.vue'
     <Controls />
 
     <UnitInfo />
+    
   </div>
 </template>

@@ -1,102 +1,66 @@
 // highlights.ts
 import { Graphics } from 'pixi.js'
-import { useGameStore } from '@/stores/gameStore'
+import { HighlightType } from '@/types/action'
 import { state } from './index'
-import { ColorVars, getCSSColor } from '../../assets/colors'
-import { UnitParams, MoveRangeHighlightsParams, CellSize } from './constants'
+import { useColorSystem, ColorConfig } from '@/composables/useColorSystem'
+import { CellSize } from './constants'
+import { Position } from '@/types/unit'
 
+const actionHighlights = new Map<string, Graphics>()
 
-const highlightedUnits = new Map<number, Graphics>()
-const moveRangeHighlights = new Array<Graphics>()
+export function drawActionLayer(positions: Position[], type: HighlightType) {
+  const colors = useColorSystem()
 
-export function highlightUnit(unitId: number) {  
-  const container = state.unitContainers.value.get(unitId)
-  if (!container || container.destroyed) {
-    console.error("Container is invalid")
-    return
-  }
+  const color = colors.getActionHighlightColor(type)
+  if (!color) return
 
-  
-  // TODO: Make it lesser hardcodded
-  const glow = new Graphics()
-  
-  const baseRadius = UnitParams.radius * 0.2
-  const glowLayers = 10
-  
-  for (let i = glowLayers; i > 0; i--) {
-    const radius = baseRadius * (1 + i * 0.7)
-    const alpha = 0.1 / Math.sqrt(i)
-    
-    glow
-      .circle(0, 0, radius)
-      .fill({ color: getCSSColor(ColorVars.general.selected), alpha: alpha })
-  }
-  
-  glow.x = container.x
-  glow.y = container.y
-  
-  if (state.highlightLayer.value) {
-    state.highlightLayer.value.addChild(glow)
-    highlightedUnits.set(unitId, glow)
+  if (!state.highlightLayer.value) return
+
+  console.debug("Draw highlight for positions ", positions)
+
+  for (const pos of positions) {
+    const highlight = drawHighlightCell(pos, color, type)
+
+    state.highlightLayer.value.addChild(highlight)
+    actionHighlights.set(`${pos.x}-${pos.y}-${type}`, highlight)
   }
 }
 
-export function unhighlightUnit(unitId: number) {
-  const highlight = highlightedUnits.get(unitId)
-  if (highlight) {
-    highlight.removeFromParent()
-    highlight.destroy()
-    highlightedUnits.delete(unitId)
-  }
-}
+export function clearActionHighlights() {
+  for (const [, highlight] of actionHighlights) {
+    try {
+      highlight.removeFromParent()
+      highlight.destroy()
+    } catch {
 
-export function clearHighlights() {
-  highlightedUnits.forEach((_, key) => {
-    unhighlightUnit(key)
-  });
-  
-  hideMovementRange()
-
-  // Debug assert warn
-  if (state.highlightLayer.value?.children &&
-      state.highlightLayer.value?.children.length > 0)
-    console.warn("highlight layer is not empty after cleaning")
-}
-
-export function showMovementRange(centerX: number, centerY: number, range: number) {
-  const gameStore = useGameStore()
-  if (!gameStore.map || !state.isLayersInitialized) return
-
-  for (let dx = -range; dx <= range; dx++) {
-    for (let dy = -range; dy <= range; dy++) {
-      const distance = Math.abs(dx) + Math.abs(dy)
-      if (distance > 0 && distance <= range) {
-        const x = centerX + dx
-        const y = centerY + dy
-
-        if (x >= 0 && x < gameStore.map.width && y >= 0 && y < gameStore.map.height) {
-          const highlight = new Graphics()
-
-          highlight
-            .rect((x + MoveRangeHighlightsParams.CoordsOffset) * CellSize,
-                  (y + MoveRangeHighlightsParams.CoordsOffset) * CellSize,
-                  MoveRangeHighlightsParams.Side,
-                  MoveRangeHighlightsParams.Side)
-            .fill({ color: getCSSColor(ColorVars.general.highlight), alpha: MoveRangeHighlightsParams.Alpha})
-
-          moveRangeHighlights.push(highlight)
-          state.highlightLayer.value!.addChild(highlight)
-        }
-      }
     }
   }
+  actionHighlights.clear()
 }
 
-function hideMovementRange()
+function drawHighlightCell(pos: Position, color: ColorConfig, type: HighlightType): Graphics
 {
-  let graph : Graphics | undefined
-  while (graph = moveRangeHighlights.pop()) {
-    graph.removeFromParent()
-    graph.destroy()
+  const highlight = new Graphics()
+
+  if (type === 'Movement')
+    return highlight
+           .rect(
+             (pos.x + 0.375) * CellSize,
+             (pos.y + 0.375) * CellSize,
+             CellSize * 0.25,
+             CellSize * 0.25
+           )
+           .fill(color)
+
+  else
+  {
+    return highlight
+           .rect(
+             (pos.x + 0.1) * CellSize,
+             (pos.y + 0.1) * CellSize,
+             CellSize * 0.8,
+             CellSize * 0.8
+           )
+           .stroke({alpha: color.alpha, color: color.color, width: CellSize * 0.02})
   }
-};
+}

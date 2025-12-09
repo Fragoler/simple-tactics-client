@@ -1,40 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
-import { useGameStore } from '@/stores/gameStore'
+import { ref, onMounted } from 'vue'
 import { usePixiGame } from '@/composables/usePixiGame'
-import type { Position } from '@/types/unit'
 
-const gameStore = useGameStore()
 const canvasRef = ref<HTMLCanvasElement>()
 
-const { 
-  initApp,
-  highlightUnit, 
-  unhighlightUnit,
-  showMovementRange,
-  clearHighlights 
-} = usePixiGame()
+const pixi = usePixiGame()
 
 onMounted(async () => {
   if (!canvasRef.value) return
   
-  await initApp(canvasRef.value)
+  await pixi.initApp(canvasRef.value)
 })
 
-watch(() => gameStore.selectedUnit?.unitId, async (newId, oldId) => {
-  if (oldId) {
-    unhighlightUnit(oldId)
-    clearHighlights()
-  }
-
-  if (newId) {
-    highlightUnit(newId)
-    const unit = gameStore.units.find(u => u.unitId === newId)
-    if (unit) {
-      showMovementRange(unit.coords.x, unit.coords.y, 2)
-    }
-  }
-})
 </script>
 
 <template>

@@ -1,34 +1,50 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { ActionDefinition, ScheduledAction, ActionState } from '@/types/action'
+import type { ActionDefinition, ScheduledAction } from '@/types/action'
 import type { Position } from '@/types/unit'
 import { useGameStore } from './gameStore'
+import { usePixiGame } from '@/composables/usePixiGame'
+import { useActionHighlight } from '@/composables/useActionHighlight'
 
 export const useActionStore = defineStore('action', () => {
   /// State
   const actionDefinitions = ref<Map<string, ActionDefinition>>(new Map())
 
-
   const scheduledActions =  ref<Map<number, ScheduledAction>>(new Map())  
   const hoverPosition =     ref<Position | null>(null)
-
-  // State for selected unit
-  const availableActions =  ref<ActionDefinition[]>([])
-  const selectedActionId =  ref<string | null>(null)
   ///
 
   /// Computed
-  const selectedAction = computed(() => {
-    if (!selectedActionId.value) return null
-    return availableActions.value.find(a => a.id === selectedActionId.value)
+  const selectedAction = computed((): ActionDefinition | undefined => {
+    const gameStore = useGameStore()
+    
+    if (!gameStore.selectedUnit)
+      return undefined
+
+    const id = getUnitAction.value(gameStore.selectedUnit.unitId)?.actionId
+    return id ? getActionById(id) : undefined
+  })
+
+  const isSelectedActionConfirmed = computed((): boolean => {
+    const gameStore = useGameStore()
+    return gameStore.selectedUnit !== undefined && isUnitActionConfirmed(gameStore.selectedUnit.unitId)
+  })
+
+  const availableActions = computed((): ActionDefinition[] => {
+    const gameStore = useGameStore()
+    
+    if (!gameStore.selectedUnit)
+      return []
+
+    return getActionsForUnit(gameStore.selectedUnit.unitId)
   })
 
   const unitHasAction = computed(() => {
-    return (unitId: number) => scheduledActions.value.has(unitId)
+    return (unitId: number): boolean => scheduledActions.value.has(unitId)
   })
 
-  const getUnitAction = computed(() => {
-    return (unitId: number) => scheduledActions.value.get(unitId)
+  const getUnitAction = computed(()  => {
+    return (unitId: number): ScheduledAction | undefined => scheduledActions.value.get(unitId)
   })
   ///
 
@@ -51,6 +67,10 @@ export const useActionStore = defineStore('action', () => {
       .filter((def): def is ActionDefinition => !!def)
   }
 
+  function isUnitActionConfirmed(unitId: number): boolean {
+    const scheduled = scheduledActions.value.get(unitId)
+    return scheduled ? scheduled.confirmed : false
+  }
 
   // Get Actions unit can use
   function getActionsForUnit(unitId: number): ActionDefinition[] {
@@ -66,13 +86,23 @@ export const useActionStore = defineStore('action', () => {
   function scheduleAction(unitId: number, actionId: string) {
     const gameStore = useGameStore()
 
+    const unit = gameStore.getUnitById(unitId)
+    if (!unit)
+      return 
+
+    if (unit.playerId !== gameStore.myPlayerId)
+    {
+      console.warn("Couldnt schedule another player unit's action")
+      return
+    }
+
     const action = getActionById(actionId)
     if (!action) {
       console.warn(`Action ${actionId} not found in definitions`)
       return
     }
 
-    const unit = gameStore.getUnitById(unitId)
+    
     if (!unit?.actionIds.includes(actionId)) {
       console.warn(`Unit ${unitId} cannot use action ${actionId}`)
       return
@@ -81,7 +111,7 @@ export const useActionStore = defineStore('action', () => {
     scheduledActions.value.set(unitId, {
       unitId,
       actionId,
-      state: 'Selecting',
+      confirmed: false,
       target: undefined
     })
   }
@@ -97,73 +127,64 @@ export const useActionStore = defineStore('action', () => {
     scheduled.target = target
   }
 
-  
-  function setAvailableActions(actions: ActionDefinition[]) {
-    availableActions.value = actions
-  }
-
-  function selectAction(actionId: string) {
-    selectedActionId.value = actionId
-  }
-
-  function deselectAction() {
-    selectedActionId.value = null
-  }
-
   // Confimed action
   function confirmAction(unitId: number) {
-    const scheduled = scheduledActions.value.get(unitId)
-    if (!scheduled) return
+    const pixi = usePixiGame()
+    const gameStore = useGameStore()
 
-    scheduled.state = 'Confirmed'
+    const unit = gameStore.getUnitById(unitId)
+    const scheduled = scheduledActions.value.get(unitId)
+    if (!scheduled || !unit) return
+
+    pixi.requestAllUnitsUpdate()
+    scheduled.confirmed = true
+    console.debug("Action confirmed: ", scheduled.actionId)
   }
 
   // Remove action from scheduling process
   function cancelAction(unitId: number) {
+    const actionHighlight = useActionHighlight()
+    const pixi = usePixiGame()
+
     scheduledActions.value.delete(unitId)
-    if (selectedActionId.value) {
-      selectedActionId.value = null
-    }
+    pixi.requestAllUnitsUpdate()
+    actionHighlight.clearActionHighlights()
   }
 
   function setHoverPosition(pos: Position | null) {
     hoverPosition.value = pos
   }
 
-  function submitActions(): ScheduledAction[] {
+  function submitedActions(): ScheduledAction[] {
     return Array.from(scheduledActions.value.values())
-                .filter((u) => u.state === 'Confirmed')
+                .filter((u) => u.confirmed)
   }
 
   function reset() {
-    availableActions.value =  []
     scheduledActions.value =  new Map()
-    selectedActionId.value =  null
   }
 
 
   return {
-    availableActions, 
-    
     // Computed
+    availableActions,
     selectedAction,
+    isSelectedActionConfirmed,
     unitHasAction,
     getUnitAction,
 
     // Actions
     registerActions,
+    isUnitActionConfirmed,
     getActionById,
     getActionsByIds,
     getActionsForUnit,
-    setAvailableActions,
-    selectAction,
-    deselectAction,
     scheduleAction,
     updateActionTarget,
     confirmAction,
     cancelAction,
     setHoverPosition,
-    submitActions,
+    submitedActions,
     reset
   }
 })

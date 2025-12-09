@@ -1,7 +1,7 @@
 export const CellSize = 50
 
 export const UnitParams = {
-  radius: CellSize * 0.4,
+  radius: CellSize * 0.3,
   strokeWidth: Math.max(2, CellSize * 0.04),
 
   triangleSides: 3,

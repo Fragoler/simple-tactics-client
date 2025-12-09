@@ -2,11 +2,12 @@ import { Container, Graphics } from 'pixi.js'
 import type { Unit } from '@/types/unit'
 import { state } from './index'
 import { getPolygonPoints } from './utils'
-import { getPlayerColor, ColorVars, getCSSColor } from '@/assets/colors'
+import { useColorSystem } from '@/composables/useColorSystem'
 import { CellSize, UnitParams } from './constants'
-import { useActionStore } from '@/stores/actionStore'
+import { useGameStore } from '@/stores/gameStore'
 
-export function addUnit(unit: Unit) {
+
+function addUnit(unit: Unit) {
   if (!state.isLayersInitialized) return
   
   const container = new Container()
@@ -27,7 +28,7 @@ export function addUnit(unit: Unit) {
 }
 
 function updateUnitOutline(unit: Unit, childId: number = 1): Graphics {
-  const actionStore = useActionStore()
+  const colors = useColorSystem()
 
   const container = state.unitContainers.value.get(unit.unitId) as Container<any>
   const unitOutline = container.children[childId] as Graphics
@@ -36,17 +37,15 @@ function updateUnitOutline(unit: Unit, childId: number = 1): Graphics {
   const radius = UnitParams.radius
   const strokeWidth = UnitParams.strokeWidth
 
-  const color = actionStore.unitHasAction(unit.unitId) 
-    ? getPlayerColor(unit.playerId)
-    : getCSSColor(ColorVars.general.nonplayer)     
+  const color = colors.getUnitOutlineColor(unit.unitId)  
 
   // TODO: REFACTOR THIS!!!
-  if (unit.sprite === 'circle') {
+  if (unit.sprite === 'Circle') {
     unitOutline
       .circle(0, 0, radius)
       .stroke({ width: strokeWidth, color: color })
   } else {
-    const sides = unit.sprite === 'triangle' ? UnitParams.triangleSides : UnitParams.squareSides
+    const sides = unit.sprite === 'Triangle' ? UnitParams.triangleSides : UnitParams.squareSides
     const points = getPolygonPoints(sides, radius)
     unitOutline
       .poly(points)
@@ -57,6 +56,8 @@ function updateUnitOutline(unit: Unit, childId: number = 1): Graphics {
 }
 
 function updateUnitFill(unit: Unit, childId: number = 0): Graphics {
+  const colors = useColorSystem()
+
   const container = state.unitContainers.value.get(unit.unitId) as Container<any>
   const unitFill = container.children[childId] as Graphics
   unitFill.clear()
@@ -64,15 +65,15 @@ function updateUnitFill(unit: Unit, childId: number = 0): Graphics {
   const healthPercent = Math.max(0, Math.min(1, unit.curHealth / unit.maxHealth))
   const radius = UnitParams.radius
   const fillRadius = radius * healthPercent
-  const color = getPlayerColor(unit.playerId)
+  const color = colors.getPlayerColor(unit.playerId)
 
   // TODO: REFACTOR THIS!!!
-  if (unit.sprite === 'circle') {
+  if (unit.sprite === 'Circle') {
     unitFill
       .circle(0, 0, fillRadius)
       .fill({ color: color })
   } else {
-    const sides = unit.sprite === 'triangle' ? UnitParams.triangleSides : UnitParams.squareSides
+    const sides = unit.sprite === 'Triangle' ? UnitParams.triangleSides : UnitParams.squareSides
     const points = getPolygonPoints(sides, fillRadius)
     unitFill
       .poly(points)
@@ -82,7 +83,7 @@ function updateUnitFill(unit: Unit, childId: number = 0): Graphics {
   return unitFill
 }
 
-export function updateUnit(unit: Unit) {
+function updateUnit(unit: Unit) {
   const container = state.unitContainers.value.get(unit.unitId) as Container<any>
   if (!container) return
 
@@ -115,7 +116,7 @@ function animateMove(container: Container, targetX: number, targetY: number, dur
   animate()
 }
 
-export function removeUnit(unitId: number) {
+function removeUnit(unitId: number) {
   const container = state.unitContainers.value.get(unitId) as Container<any>
   if (!container)
     return 
@@ -129,7 +130,7 @@ export function removeUnit(unitId: number) {
   }
 }
 
-export function syncUnits(newUnits: Unit[]) {
+function syncUnits(newUnits: Unit[]) {
   if (!state.isLayersInitialized) return
 
   const currentIds = new Set(newUnits.map((u) => u.unitId))
@@ -145,5 +146,19 @@ export function syncUnits(newUnits: Unit[]) {
     } else {
       addUnit(unit)
     }
+  }
+}
+
+
+export function requestAllUnitsUpdate()
+{
+  const gameStore = useGameStore()
+  requestUnitsUpdate(gameStore.units)
+}
+
+export function requestUnitsUpdate(units: Unit[])
+{
+  if (state.isLayersInitialized) {
+    syncUnits(units)
   }
 }

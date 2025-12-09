@@ -1,6 +1,6 @@
 import type { Position } from '@/types/unit'
 
-export type HighlightPattern =
+export type Pattern =
   | 'Manhattan'
   | 'Adjacent'
   | 'AdjacentDiagonal'
@@ -22,11 +22,6 @@ export type HighlightVisibility =
   | 'Confirmed'
   | 'Always'
 
-export type ActionState =
-  | 'None'
-  | 'Selecting'
-  | 'Confirmed'
-
 export type RelativeType =
   | 'Executor'
   | 'Target'
@@ -37,7 +32,7 @@ export type TargetType =
   | 'None'
 
 export interface HighlightLayer {
-  pattern: HighlightPattern
+  pattern: Pattern
   range: number
   relativeTo: RelativeType
   type: HighlightType
@@ -52,6 +47,7 @@ export interface ActionDefinition {
   
   targetType: TargetType
   targetFilter: {
+    pattern: Pattern
     range?: number
     requireEnemy?: boolean
     requireAlly?: boolean
@@ -64,7 +60,8 @@ export interface ActionDefinition {
 export interface ScheduledAction {
   unitId: number
   actionId: string
-  state: ActionState
+
+  confirmed: boolean 
   target?: {
     cell?: Position
     unitIds?: number[]

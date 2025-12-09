@@ -1,11 +1,40 @@
 import { useGameStore } from '@/stores/gameStore'
 import { useActionStore } from '@/stores/actionStore'
-import type { ActionDefinition, HighlightLayer, ActionState, HighlightPattern } from '@/types/action'
+import { useActionHighlight } from './useActionHighlight'
+import type { ActionDefinition, HighlightLayer, Pattern } from '@/types/action'
 import type { Unit, Position } from '@/types/unit'
 
+
+
 export function useActionSystem() {
-  const gameStore = useGameStore()
   
+  
+
+  // Select - Confirm cyrcle
+  function selectAction(actionId: string) {
+    const gameStore = useGameStore()
+    const actionStore = useActionStore()
+    const actionHighlight = useActionHighlight()
+
+    if (!gameStore.selectedUnit) return
+
+    actionStore.scheduleAction(gameStore.selectedUnit.unitId, actionId)
+    actionHighlight.showActionHighlights(gameStore.selectedUnit.unitId)  
+  }
+
+  function canBeConfirmedWithButton(actionId: string): boolean {
+    const actionStore = useActionStore()
+
+    const action = actionStore.getActionById(actionId)
+    if (!action)
+      return false
+
+    return action.targetType === 'None' 
+  }
+
+  //
+
+
 
   function getAvailableActions(): ActionDefinition[] {
     const actionStore = useActionStore()
@@ -16,10 +45,10 @@ export function useActionSystem() {
     action: ActionDefinition,
     executor: Unit
   ): Position[] {
-    const layer = action.highlightLayers.find(l => l.relativeTo === 'Executor')
-    if (!layer) return []
+    const layers: HighlightLayer[] = action.highlightLayers.filter(l => l.relativeTo === 'Executor')
+    if (!layers) return []
 
-    return getPositionsByPattern(
+    getPositionsByPattern(
       executor.coords,
       layer.pattern,
       layer.range,
@@ -62,22 +91,14 @@ export function useActionSystem() {
     return true
   }
 
-  function getHighlightLayersForState(
-    action: ActionDefinition,
-    state: ActionState
-  ): HighlightLayer[] {
-    return action.highlightLayers.filter(layer => {
-      if (layer.visibility === 'Always') return true
-      return layer.visibility === state
-    })
-  }
-
   function getPositionsByPattern(
     center: Position,
-    pattern: HighlightPattern,
+    pattern: Pattern,
     range: number,
     filter: ActionDefinition['targetFilter']
   ): Position[] {
+    const gameStore = useGameStore()
+
     if (!gameStore.map) return []
 
     const positions: Position[] = []
@@ -122,10 +143,11 @@ export function useActionSystem() {
 
   function getCirclePositions(center: Position, range: number): Position[] {
     const positions: Position[] = []
-    for (let dx = -range; dx <= range; dx++) {
-      for (let dy = -range; dy <= range; dy++) {
+    const maxRange: number = Math.ceil(range)
+    for (let dx = -maxRange; dx <= maxRange; dx++) {
+      for (let dy = -maxRange; dy <= maxRange; dy++) {
         const distance = Math.sqrt(dx * dx + dy * dy)
-        if (distance <= range) {
+        if (distance <= range && distance !== 0) {
           positions.push({ x: center.x + dx, y: center.y + dy })
         }
       }
@@ -145,10 +167,12 @@ export function useActionSystem() {
   }
 
   return {
+    selectAction,
+    canBeConfirmedWithButton,
+
     getAvailableActions,
     getValidTargets,
     validateTarget,
-    getHighlightLayersForState,
     getPositionsByPattern
   }
 }

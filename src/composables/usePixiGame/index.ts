@@ -3,12 +3,13 @@ import { Application, Container } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { initializeLayers } from './layers'
 import { drawMap } from './rendering'
-import { syncUnits } from './units'
-import { highlightUnit, unhighlightUnit, showMovementRange, clearHighlights } from './highlights'
+import { requestAllUnitsUpdate, requestUnitsUpdate } from './units'
+import { drawActionLayer, clearActionHighlights } from './highlights'
 import { screenToGrid } from './utils'
-import { ColorVars, getCSSColor } from '@/assets/colors'
+import { useColorSystem } from '@/composables/useColorSystem'
 import { CellSize } from './constants'
 import { useGameInput } from '../useGameInput'
+import { Unit } from '@/types/unit'
 
 export const state = {
   app:             ref<Application | null>(null),
@@ -23,7 +24,8 @@ export const state = {
 export function usePixiGame() {
 
   async function initApp(canvasElement: HTMLCanvasElement) {
-    const { setupInputHandlers } = useGameInput()
+    const colors = useColorSystem()
+    const input = useGameInput()
 
     if (state.app.value) return
 
@@ -33,7 +35,7 @@ export function usePixiGame() {
       canvas: canvasElement,
       width: 100,
       height: 100,
-      backgroundColor: getCSSColor(ColorVars.general.background),
+      backgroundColor: colors.getCSSColor(colors.ColorVars.general.background),
       antialias: true,
       resolution: window.devicePixelRatio || 1,
     })
@@ -42,7 +44,7 @@ export function usePixiGame() {
     state.app.value.stage.hitArea = state.app.value.screen
 
     setupWatchers()
-    setupInputHandlers()
+    input.setupInputHandlers()
   }
 
   function setupWatchers() {
@@ -68,11 +70,9 @@ export function usePixiGame() {
 
     watch(
       () => gameStore.units,
-      (newUnits) => {
+      (newUnits: Unit[]) => {
         console.log('Units changed:', newUnits)
-        if (state.isLayersInitialized) {
-          syncUnits(newUnits)
-        }
+        requestUnitsUpdate(newUnits)
       },
       { deep: true, immediate: true }
     )
@@ -100,7 +100,7 @@ export function usePixiGame() {
   }
 
   function destroy() {
-    const { removeInputHandlers } = useGameInput()
+    const input = useGameInput()
 
     if (state.app.value) {
       state.app.value.destroy(true)
@@ -109,18 +109,21 @@ export function usePixiGame() {
     
     state.unitContainers.value.clear()
     state.isLayersInitialized = false
-    removeInputHandlers()
+    input.removeInputHandlers()
   }
 
   return {
     app: state.app,
     initApp,
     drawMap,
-    highlightUnit,
-    unhighlightUnit,
-    showMovementRange,
-    clearHighlights,
+
+    drawActionLayer,
+    clearActionHighlights,
+    
     screenToGrid,
     destroy,
+
+    requestUnitsUpdate,
+    requestAllUnitsUpdate,
   }
 }

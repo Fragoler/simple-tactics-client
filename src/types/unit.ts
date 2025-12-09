@@ -1,6 +1,4 @@
-export type UnitSprite = 'triangle' | 'square' | 'circle'
-export type ActionType = 'move' | 'wait'
-
+export type UnitSprite = 'Triangle' | 'Square' | 'Circle'
 
 export interface Unit {
   unitId: number

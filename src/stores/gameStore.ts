@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { GameState, Player, MapState } from '@/types/game'
 import type { Unit } from '@/types/unit'
-import { useConnectionStore } from './connectionStore'
 import { useActionStore } from './actionStore'
 import { useActionHighlight } from '@/composables/useActionHighlight'
 
@@ -19,8 +18,15 @@ export const useGameStore = defineStore('game', () => {
   const isPlanningPhase = ref<boolean>(true)
 
   // Computed
-  const selectedUnit = computed(() => {
+  const selectedUnit = computed((): Unit | undefined => {
     return units.value.find((u) => u.unitId === selectedUnitId.value)
+  })
+
+  const isMyUnitSelected = computed((): boolean => {
+    if (!selectedUnit.value)
+      return false
+
+    return selectedUnit.value.playerId === myPlayerId.value
   })
 
 
@@ -30,7 +36,6 @@ export const useGameStore = defineStore('game', () => {
     return units.value.find((u) => (u.unitId === unitId))
   }
 
-
   function updateGameState(state: Partial<GameState>) {
     if (state.players) players.value = state.players
     if (state.map) map.value = state.map
@@ -39,10 +44,16 @@ export const useGameStore = defineStore('game', () => {
 
   function selectUnit(unitId: number) {
     selectedUnitId.value = unitId
+
+    const actionHighlight = useActionHighlight()
+    actionHighlight.showActionHighlights(unitId)
   }
 
   function deselectUnit() {
     selectedUnitId.value = null
+
+    const actionHighlight = useActionHighlight()
+    actionHighlight.clearActionHighlights()
   }
 
   function updateUnit(unitId: number, updates: Partial<Unit>) {
@@ -56,7 +67,7 @@ export const useGameStore = defineStore('game', () => {
     const actionStore = useActionStore()
     const highlight = useActionHighlight()
 
-    const actions = actionStore.submitActions()
+    const actions = actionStore.submitedActions()
 
     // TODO: Send to server
     
@@ -65,24 +76,17 @@ export const useGameStore = defineStore('game', () => {
     isPlanningPhase.value = false
   }
 
-  function undoCurrentAction() {
-    const actionStore = useActionStore()
-    if (selectedUnitId.value) {
-      actionStore.cancelAction(selectedUnitId.value)
-    }
-  }
-
-
   return {
     // State
     units,
     players,
     map,
     isPlanningPhase,
-    
+    myPlayerId,
+
     // Computed
     selectedUnit,
-    myPlayerId,
+    isMyUnitSelected,
         
     // Actions
     getUnitById,
@@ -91,6 +95,5 @@ export const useGameStore = defineStore('game', () => {
     deselectUnit,
     updateUnit,
     endTurn,
-    undoCurrentAction,
   }
 })

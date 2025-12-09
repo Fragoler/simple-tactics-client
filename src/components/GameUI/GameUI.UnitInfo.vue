@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { useColorSystem } from '@/composables/useColorSystem';
 import { useGameStore } from '@/stores/gameStore';
 import { Unit } from '@/types/unit';
 
+
 const gameStore = useGameStore()
+const color = useColorSystem()
+
 
 function getUnitControllerPlayer(unit : Unit)
 {
@@ -19,8 +23,8 @@ function getUnitControllerPlayer(unit : Unit)
 			
 			<div class="w-full bg-gray-700 h-2 rounded overflow-hidden">
 				<div 
-					:style="`width: ${(gameStore.selectedUnit.curHealth / gameStore.selectedUnit.maxHealth) * 100}%`"
-					:class="gameStore.selectedUnit.playerId === 0 ? 'bg-primary' : 'bg-secondary'"
+					:style="`width: ${(gameStore.selectedUnit.curHealth / gameStore.selectedUnit.maxHealth) * 100}%; 
+							 background-color: var(${color.getPlayerStringColor(gameStore.selectedUnit.playerId)})`"
 					class="h-full transition-all duration-300"
 				/>
 			</div>
@@ -41,7 +45,7 @@ function getUnitControllerPlayer(unit : Unit)
 				 class="flex justify-between">
 				<span class="text-gray-400">Игрок:</span>
 				<span 
-					:color="gameStore.selectedUnit.playerId === 0 ? '--game-player1' : '--game-player2'"
+					:color="`color: var(${color.getPlayerStringColor(gameStore.selectedUnit.playerId)})`"
 					class="font-semibold"
 				>
 					{{ getUnitControllerPlayer(gameStore.selectedUnit)?.playerName }}
