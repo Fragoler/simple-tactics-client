@@ -4,8 +4,8 @@ import { useSignalR } from '@/composables/useSignalR.ts'
 import { useConnectionStore } from '@/stores/connectionStore'
 
 
-const gameToken = ref('8e43c5c4-ed1a-46b5-970b-8860dce4e3da')
-const playerToken = ref('20cc5f53-97ff-4f98-91ac-11947a5142fb')
+const gameToken = ref('07cfb414-1230-4842-b05d-655d375990f3')
+const playerToken = ref('c3dd6253-537e-47b3-86de-bfea9865bf16')
 
 const isInputVisible = ref(false)
 const isConnecting = ref(false)
@@ -21,7 +21,7 @@ async function handleClick() {
       const { connect } = useSignalR()
 
       conStore.updateTokens(gameToken.value, playerToken.value)
-      await connect(conStore.gameToken, conStore.playerToken)
+      await connect()
 
       if (conStore.isConnected) {
         isInputVisible.value = false

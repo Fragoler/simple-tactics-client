@@ -42,10 +42,10 @@ function onActionClick(actionId: string) {
     actionSystem.selectAction(actionId)
 }
 
-const hasUnitsWithoutActions = computed(() => {
+const hasUnitsWithoutConfirmed = computed(() => {
   return gameStore.units.some(
     u => u.playerId === gameStore.myPlayerId &&
-         !actionStore.unitHasAction(u.unitId)
+        (!actionStore.unitHasAction(u.unitId) || !actionStore.getUnitAction(u.unitId)?.confirmed)
   )
 })
 
@@ -81,8 +81,8 @@ function endTurn() {
 
       <button
         @click="endTurn"
-        :disabled="hasUnitsWithoutActions || !gameStore.isPlanningPhase"
-        :title="hasUnitsWithoutActions ? 'Все юниты должны иметь действие' : ''"
+        :disabled="hasUnitsWithoutConfirmed || !gameStore.isPlanningPhase"
+        :title="hasUnitsWithoutConfirmed ? 'Все юниты должны иметь действие' : ''"
         class="bg-primary text-black text-xs font-bold py-2 rounded hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         ✓ Завершить ход

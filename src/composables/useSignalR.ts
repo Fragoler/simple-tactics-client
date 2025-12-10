@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/gameStore'
 import type { GameState, Player } from '@/types/game'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { useActionStore } from '@/stores/actionStore'
-import { ActionDefinition } from '@/types/action'
+import { ActionDefinition, ScheduledAction } from '@/types/action'
 
 const connection = ref<signalR.HubConnection | null>(null)
 
@@ -15,11 +15,22 @@ async function buildConnection() {
     .withAutomaticReconnect([0, 0, 0, 1000, 3000, 5000])
     .configureLogging(signalR.LogLevel.Debug)
     .build()
+
+  await connection.value.start()
 }
 
 async function addHandelers() {
   if (connection.value === null)
     throw Error("Connection is null");
+
+  connection.value.on('joinedGame', async () => {
+      const conStore = useConnectionStore()
+      conStore.setConnectionStatus('connected')
+
+      await loadGameState()
+      await requestMyPlayer()
+      await requestGameActions()
+  })
 
   connection.value.on('gameState', (state: GameState) => {
     console.log('Game state received:', state)
@@ -69,11 +80,43 @@ async function addHandelers() {
   })
 }
 
+// Send
+async function joinGame() {
+  if (connection.value === null)
+    throw Error("Connection is null");
+
+  const conStore = useConnectionStore()
+  await connection.value.invoke('JoinGame', conStore.gameToken, conStore.playerToken)
+}
+
+async function loadGameState() {
+  if (connection.value === null)
+    throw Error("Connection is null");
+
+  await connection.value.invoke('RequestGameState')
+}
+
+async function requestMyPlayer() {
+
+  if (connection.value === null)
+    throw Error("Connection is null");
+
+  await connection.value.invoke("RequestPlayerId")
+}
+
+async function requestGameActions() {
+  if (connection.value === null)
+    throw Error("Connection is null");
+
+  await connection.value.invoke("RequestGameActions")
+}
+//
+
 
 
 export function useSignalR() {
   
-  async function connect(gameToken: string, playerToken: string) {
+  async function connect() {
     const conStore = useConnectionStore()    
     
     try {
@@ -82,11 +125,7 @@ export function useSignalR() {
       await buildConnection()
       await addHandelers()
       
-      await joinGame(gameToken, playerToken)
-      await loadGameState(gameToken, playerToken)
-      await requestMyPlayer(gameToken, playerToken)
-      await requestGameActions(gameToken, playerToken)
-      
+      await joinGame()
     } catch (error) {
       console.error('Connection error:', error)
       conStore.setConnectionStatus('disconnected')
@@ -105,43 +144,16 @@ export function useSignalR() {
     }
   }
 
-
-  // Send
-  async function joinGame(gameToken: string, playerToken: string) {
-    const conStore = useConnectionStore()
-
+  async function endTurn(actions: ScheduledAction[]) {
     if (connection.value === null)
       throw Error("Connection is null");
 
-    await connection.value.start()
-    conStore.setConnectionStatus('connected')
-    await connection.value.invoke('JoinGame', gameToken, playerToken)
-  }
-
-  async function loadGameState(gameToken: string, playerToken: string) {
-    if (connection.value === null)
-      throw Error("Connection is null");
-
-    await connection.value.invoke('RequestGameState', gameToken, playerToken)
-  }
-
-  async function requestMyPlayer(gameToken: string, playerToken: string) {
-    if (connection.value === null)
-      throw Error("Connection is null");
-
-    await connection.value.invoke("RequestPlayerId", gameToken, playerToken)
-  }
-
-  async function requestGameActions(gameToken: string, playerToken: string) {
-    if (connection.value === null)
-      throw Error("Connection is null");
-
-    await connection.value.invoke("RequestGameActions", gameToken, playerToken)
+    await connection.value.invoke("RequestTurnEnd", actions)
   }
 
   return {
     connect,
     disconnect,
-    loadGameState
+    endTurn,
   }
 }

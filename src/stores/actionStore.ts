@@ -162,7 +162,6 @@ export const useActionStore = defineStore('action', () => {
 
   function submitedActions(): ScheduledAction[] {
     return Array.from(scheduledActions.value.values())
-                .filter((u) => u.confirmed)
   }
 
   function reset() {

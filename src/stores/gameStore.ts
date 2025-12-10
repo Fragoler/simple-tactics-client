@@ -5,6 +5,7 @@ import type { Unit } from '@/types/unit'
 import { useActionStore } from './actionStore'
 import { useActionHighlight } from '@/composables/useActionHighlight'
 import { usePixiGame } from '@/composables/usePixiGame'
+import { useSignalR } from '@/composables/useSignalR'
 
 export const useGameStore = defineStore('game', () => {
   
@@ -70,17 +71,19 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  function endTurn() {
+  function preparEndTurn() {
     const actionStore = useActionStore()
     const highlight = useActionHighlight()
+    const signal = useSignalR()
 
     const actions = actionStore.submitedActions()
 
-    // TODO: Send to server
+    signal.endTurn(actions)
     
-    actionStore.reset()
-    highlight.clearActionHighlights()
-    isPlanningPhase.value = false
+    // deselectUnit()
+    // actionStore.reset()
+    // highlight.clearActionHighlights()
+    // isPlanningPhase.value = false
   }
 
   return {
@@ -101,6 +104,6 @@ export const useGameStore = defineStore('game', () => {
     selectUnit,
     deselectUnit,
     updateUnit,
-    endTurn,
+    endTurn: preparEndTurn,
   }
 })
