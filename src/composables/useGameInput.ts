@@ -69,23 +69,27 @@ export function useGameInput() {
     if (!selectedUnit || 
         !actionStore.selectedAction || 
         actionStore.getUnitAction(selectedUnit.unitId)?.confirmed)
-      selectUnit(pos)
+      unitSelection(pos)
     else 
       confirmAction(pos, selectedUnit)
 
   }
 
   function onRightClick(pos: Position) {
+    console.debug("Right clicked")
+    unitSelection(pos)
+  }
+
+  function unitSelection(pos: Position)
+  {
     const gameStore = useGameStore()
 
-    console.debug("Right clicked")
     const unit = findUnitAt(pos)
     if (!unit && gameStore.selectedUnit)
       gameStore.deselectUnit()
     else if (unit)
       selectUnit(pos)
   }
-
 
   function selectUnit(pos: Position) {
     const gameStore = useGameStore()
