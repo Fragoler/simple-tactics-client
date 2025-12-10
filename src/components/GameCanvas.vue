@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { usePixiGame } from '@/composables/usePixiGame'
+import { useActionSystem } from '@/composables/useActionSystem'
+import { useActionHighlight } from '@/composables/useActionHighlight'
 
 const canvasRef = ref<HTMLCanvasElement>()
 const pixi = usePixiGame()
+const actions = useActionSystem()
+const highlights = useActionHighlight()
 
 onMounted(async () => {
   if (!canvasRef.value) return
 
-
+  highlights.init()
+  actions.init()
   await pixi.initApp(canvasRef.value)
 })
 

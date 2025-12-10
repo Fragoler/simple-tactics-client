@@ -64,8 +64,6 @@ export function useGameInput() {
 
     const selectedUnit = gameStore.selectedUnit
     
-    console.debug("Left clicked")
-    
     if (!selectedUnit || 
         !actionStore.selectedAction || 
         actionStore.getUnitScheduledAction(selectedUnit.unitId)?.confirmed)
@@ -79,8 +77,6 @@ export function useGameInput() {
     const gameStore = useGameStore()
     const actionStore = useActionStore()
     const selectedUnit = gameStore.selectedUnit
-
-    console.debug("Right clicked")
 
     if (selectedUnit && 
         actionStore.getUnitScheduledAction(selectedUnit.unitId)?.confirmed)
@@ -104,7 +100,6 @@ export function useGameInput() {
     const gameStore = useGameStore()
 
     const unit = findUnitAt(pos)
-    console.debug("Select unit", unit?.unitId)
     if (unit)
       gameStore.selectUnit(unit.unitId)
   }
@@ -112,8 +107,6 @@ export function useGameInput() {
   function confirmAction(pos: Position, unit: Unit) {
     const actionSystem = useActionSystem()
     const actionStore = useActionStore()
-
-    console.debug("Try confirm action", )
 
     if (!actionSystem.canConfirmWithTarget(pos))
       return 

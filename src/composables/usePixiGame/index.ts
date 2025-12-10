@@ -3,13 +3,14 @@ import { Application, Container } from 'pixi.js'
 import { useGameStore } from '@/stores/gameStore'
 import { initializeLayers } from './layers'
 import { drawMap } from './rendering'
-import { requestAllUnitsUpdate, requestUnitsUpdate } from './units'
+import { requestAllUnitsUpdate } from './units'
 import { clearHighlights, clearTargetHighlights, drawHighlights, highlightUnit, unhighlightUnit } from './highlights'
 import { screenToGrid } from './utils'
 import { useColorSystem } from '@/composables/useColorSystem'
 import { CellSize } from './constants'
 import { useGameInput } from '../useGameInput'
 import { Unit } from '@/types/unit'
+import { useActionStore } from '@/stores/actionStore'
 
 export const state = {
   app:             ref<Application | null>(null),
@@ -49,6 +50,7 @@ export function usePixiGame() {
 
   function setupWatchers() {
     const gameStore = useGameStore()
+    const actionStore = useActionStore()
 
     watch(
       () => gameStore.map,
@@ -70,11 +72,36 @@ export function usePixiGame() {
 
     watch(
       () => gameStore.units,
-      (newUnits: Unit[]) => {
-        console.log('Units changed:', newUnits)
-        requestUnitsUpdate(newUnits)
+      (_) => {
+        requestAllUnitsUpdate()
       },
       { deep: true, immediate: true }
+    )
+
+    watch(
+      () => gameStore.players,
+      (_) => {
+        requestAllUnitsUpdate()
+      },
+      { deep: true, immediate: true }
+    )
+
+    watch(
+      () => actionStore.scheduledActions,
+      (_) => {
+        requestAllUnitsUpdate()
+      },
+      { deep: true, immediate: true}
+    )
+
+    watch(
+      () => gameStore.selectedUnit,
+      (selected: Unit | null) => {
+        if (selected)
+          highlightUnit(selected.unitId)
+        else
+          unhighlightUnit()
+      }
     )
   }
 
@@ -92,8 +119,6 @@ export function usePixiGame() {
 
     const newWidth = gameStore.map.width * CellSize
     const newHeight = gameStore.map.height * CellSize
-
-    console.log('Canvas size:', newWidth, 'x', newHeight)
 
     state.app.value.renderer.resize(newWidth, newHeight)
     state.app.value.stage.hitArea = state.app.value.screen
@@ -120,14 +145,8 @@ export function usePixiGame() {
     drawHighlights,
     clearHighlights,
     clearTargetHighlights,
-
-    highlightUnit,
-    unhighlightUnit,
     
     screenToGrid,
     destroy,
-
-    requestUnitsUpdate,
-    requestAllUnitsUpdate,
   }
 }

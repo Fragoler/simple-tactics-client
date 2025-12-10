@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import type { ActionDefinition, ScheduledAction } from '@/types/action'
 import type { Position } from '@/types/unit'
 import { useGameStore } from './gameStore'
-import { usePixiGame } from '@/composables/usePixiGame'
 import { useActionHighlight } from '@/composables/useActionHighlight'
 
 export const useActionStore = defineStore('action', () => {
@@ -27,7 +26,7 @@ export const useActionStore = defineStore('action', () => {
 
   const isSelectedActionConfirmed = computed((): boolean => {
     const gameStore = useGameStore()
-    return gameStore.selectedUnit !== undefined && isUnitActionConfirmed(gameStore.selectedUnit.unitId)
+    return gameStore.selectedUnit !== null && isUnitActionConfirmed(gameStore.selectedUnit.unitId)
   })
 
   const availableActions = computed((): ActionDefinition[] => {
@@ -44,7 +43,7 @@ export const useActionStore = defineStore('action', () => {
   })
 
   const getUnitScheduledAction = computed(()  => {
-    return (unitId: number): ScheduledAction | undefined => scheduledActions.value.get(unitId)
+    return (unitId: number): ScheduledAction | null => scheduledActions.value.get(unitId) ?? null
   })
   ///
 
@@ -121,19 +120,15 @@ export const useActionStore = defineStore('action', () => {
     unitId: number,
     target: Position 
   ) {
-    const highlight = useActionHighlight()
-
     const scheduled = getUnitScheduledAction.value(unitId)
     if (!scheduled || scheduled.target === target) 
       return
 
     scheduled.target = target
-    highlight.highlightForTarget(scheduled.unitId)
   }
 
   // Confimed action
   function confirmAction(unitId: number) {
-    const highlight = useActionHighlight()
     const gameStore = useGameStore()
 
     const unit = gameStore.getUnitById(unitId)
@@ -142,32 +137,20 @@ export const useActionStore = defineStore('action', () => {
 
     scheduled.confirmed = true
 
-    highlight.renderActionHighlights(unitId)
     console.debug("Action confirmed: ", scheduled.actionId)
   }
 
   // Remove action from scheduling process
   function cancelAction(unitId: number) {
-    const actionHighlight = useActionHighlight()
-    const pixi = usePixiGame()
-
     scheduledActions.value.delete(unitId)
-    pixi.requestAllUnitsUpdate()
-    actionHighlight.clearActionHighlights()
   }
 
   function unconfirmAction(unitId: number) {
-    const actionHighlight = useActionHighlight()
-    const pixi = usePixiGame()
-
     const scheduled = getUnitScheduledAction.value(unitId)
     if (!scheduled)
       throw Error("Unconfirm not existing action")
 
     scheduled.confirmed = false
-
-    pixi.requestAllUnitsUpdate()
-    actionHighlight.clearActionHighlights()
   }
 
   function setHoverPosition(pos: Position | null) {
@@ -184,6 +167,8 @@ export const useActionStore = defineStore('action', () => {
 
 
   return {
+    scheduledActions,
+
     // Computed
     availableActions,
     selectedAction,

@@ -58,7 +58,7 @@ function undoAction() {
 }
 
 function endTurn() {
-  gameStore.endTurn()
+  gameStore.prepareEndTurn()
 }
 
 </script>
@@ -81,7 +81,7 @@ function endTurn() {
 
       <button
         @click="endTurn"
-        :disabled="hasUnitsWithoutConfirmed || !gameStore.isPlanningPhase"
+        :disabled="hasUnitsWithoutConfirmed || gameStore.myPlayer?.isReady"
         :title="hasUnitsWithoutConfirmed ? 'Все юниты должны иметь действие' : ''"
         class="bg-primary text-black text-xs font-bold py-2 rounded hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
@@ -90,7 +90,8 @@ function endTurn() {
     </div>
 
     <!-- Row : Unit action -->
-    <div class="grid grid-cols-3 gap-2">
+    <div v-if="!gameStore.myPlayer?.isReady"
+      class="grid grid-cols-3 gap-2">
       <button
         v-for="action in actions"
         :key="action.id"

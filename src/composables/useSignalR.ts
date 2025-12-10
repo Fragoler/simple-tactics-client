@@ -39,12 +39,20 @@ async function addHandelers() {
     gameStore.updateGameState(state)
   })
 
-  connection.value.on('playerId', (player: Player) => {
+  connection.value.on('yourPlayer', (player: Player) => {
     console.log('My player received:', player)
 
     const gameStore = useGameStore()
     gameStore.myPlayerId = player.playerId
   })
+
+  connection.value.on('playersState', (players: Player[]) => {
+    console.log('Players updated:', players)
+
+    const gameStore = useGameStore()
+    gameStore.updatePlayers(players)
+  })
+
 
   connection.value.on('gameActions', (actions: ActionDefinition[]) => {
     console.log('Action definitions received:', actions)

@@ -4,8 +4,8 @@ import { useSignalR } from '@/composables/useSignalR.ts'
 import { useConnectionStore } from '@/stores/connectionStore'
 
 
-const gameToken = ref('07cfb414-1230-4842-b05d-655d375990f3')
-const playerToken = ref('c3dd6253-537e-47b3-86de-bfea9865bf16')
+const gameToken = ref('353e34ca-1831-4fb5-8bd1-ee0eb7da393f')
+const playerToken = ref('dee0b41e-d38d-4dd5-a95e-2dd0b40badb5')
 
 const isInputVisible = ref(false)
 const isConnecting = ref(false)

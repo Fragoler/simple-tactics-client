@@ -77,10 +77,16 @@ function getUnitOutlineColor(unitId: number) {
     const gameStore = useGameStore()
 
     const unit = gameStore.getUnitById(unitId) 
-    if (!unit || !actionStore.unitHasAction(unitId))
-        return getCSSColor(ColorVars.general.nonplayer)   
+    if (!unit)
+      throw Error(`Unknown unitid ${unitId}`)
 
-    return getPlayerColor(unit?.playerId)
+    if (unit.playerId !== null && gameStore.isPlayerReady(unit.playerId))
+      return getPlayerColor(unit?.playerId)
+
+    if (actionStore.getUnitScheduledAction(unitId)?.confirmed)
+      return getCSSColor(ColorVars.general.selected)
+
+    return getCSSColor(ColorVars.general.nonplayer) 
 }
 
 function getActionHighlightColor(type: HighlightType) : ColorConfig

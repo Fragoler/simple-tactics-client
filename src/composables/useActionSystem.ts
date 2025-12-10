@@ -3,23 +3,41 @@ import { useActionStore } from '@/stores/actionStore'
 import { useActionHighlight } from './useActionHighlight'
 import type { ActionDefinition, Pattern } from '@/types/action'
 import type { Unit, Position } from '@/types/unit'
+import { watch } from 'vue'
+import { Player } from '@/types/game'
 
 
 
 export function useActionSystem() {
-  
-  
+
+  function init()
+  {
+    const gameStore = useGameStore()
+    const actionStore = useActionStore()
+
+    watch(
+      gameStore.players,
+      (players: Player[], oldPlayers: Player[]) => {
+        const newMe = players.find(p => p.playerId === gameStore.myPlayerId)
+        const oldMe = oldPlayers.find(p => p.playerId === gameStore.myPlayerId)
+        if (!oldMe || !newMe)
+          return
+
+        if (!oldMe.isReady && newMe.isReady) {
+          actionStore.reset()
+        }
+      }
+    )
+  }
 
   // Select - Confirm cyrcle
   function selectAction(actionId: string) {
     const gameStore = useGameStore()
     const actionStore = useActionStore()
-    const actionHighlight = useActionHighlight()
 
     if (!gameStore.selectedUnit) return
 
     actionStore.scheduleAction(gameStore.selectedUnit.unitId, actionId)
-    actionHighlight.renderActionHighlights(gameStore.selectedUnit.unitId)  
   }
 
   function canBeConfirmedWithButton(actionId: string): boolean {
@@ -113,41 +131,6 @@ export function useActionSystem() {
     )
   }
 
-  function validateTarget(
-    unit: Unit,
-    action: ActionDefinition,
-    target: Position | Unit
-  ): boolean {
-    const layer = action.highlightLayers.find(l => l.relative === 'Executor')
-    if (!layer) return true
-
-    const positions = getPositionsByPattern(
-      unit.coords,
-      layer.pattern,
-      layer.range,
-      action.targetFilter
-    )
-
-    const targetPos = 'coords' in target ? target.coords : target
-    const isInRange = positions.some(p => p.x === targetPos.x && p.y === targetPos.y)
-
-    if (!isInRange) return false
-
-    if (action.targetFilter?.requireEnemy) {
-      if ('playerId' in target && target.playerId === unit.playerId) {
-        return false
-      }
-    }
-
-    if (action.targetFilter?.requireAlly) {
-      if ('playerId' in target && target.playerId !== unit.playerId) {
-        return false
-      }
-    }
-
-    return true
-  }
-
   function getPositionsByPattern(
     center: Position,
     pattern: Pattern,
@@ -230,6 +213,7 @@ export function useActionSystem() {
   }
 
   return {
+    init,
     selectAction,
     canConfirmWithTarget,
     canBeConfirmedWithButton,
@@ -237,7 +221,6 @@ export function useActionSystem() {
 
     getAvailableActions,
     getValidTargets,
-    validateTarget,
     getPositionsByPattern
   }
 }

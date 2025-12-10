@@ -3,8 +3,6 @@ import { ref, computed } from 'vue'
 import type { GameState, Player, MapState } from '@/types/game'
 import type { Unit } from '@/types/unit'
 import { useActionStore } from './actionStore'
-import { useActionHighlight } from '@/composables/useActionHighlight'
-import { usePixiGame } from '@/composables/usePixiGame'
 import { useSignalR } from '@/composables/useSignalR'
 
 export const useGameStore = defineStore('game', () => {
@@ -20,8 +18,12 @@ export const useGameStore = defineStore('game', () => {
   const isPlanningPhase = ref<boolean>(true)
 
   // Computed
-  const selectedUnit = computed((): Unit | undefined => {
-    return units.value.find((u) => u.unitId === selectedUnitId.value)
+  const selectedUnit = computed((): Unit | null => {
+    return units.value.find((u) => u.unitId === selectedUnitId.value) ?? null
+  })
+
+  const myPlayer = computed((): Player | null => {
+    return players.value.find(p => p.playerId === myPlayerId.value) ?? null
   })
 
   const isMyUnitSelected = computed((): boolean => {
@@ -33,6 +35,15 @@ export const useGameStore = defineStore('game', () => {
 
 
   // Actions
+  function isPlayerReady(playerId: number)
+  {
+    const player = players.value.find(p => p.playerId === playerId)
+    if (!player)
+      throw Error("Unknown player id")
+
+    return player.isReady
+  }
+
   function getUnitById(unitId: number): Unit | undefined
   {
     return units.value.find((u) => (u.unitId === unitId))
@@ -44,24 +55,17 @@ export const useGameStore = defineStore('game', () => {
     if (state.units) units.value = state.units
   }
 
+  function updatePlayers(_players: Player[])
+  {
+    players.value = _players
+  }
+
   function selectUnit(unitId: number) {
     selectedUnitId.value = unitId
-
-    const actionHighlight = useActionHighlight()
-    actionHighlight.renderActionHighlights(unitId)
-
-    const pixi = usePixiGame()
-    pixi.highlightUnit(unitId)
   }
 
   function deselectUnit() {
     selectedUnitId.value = null
-
-    const actionHighlight = useActionHighlight()
-    actionHighlight.clearActionHighlights()
-
-    const pixi = usePixiGame()
-    pixi.unhighlightUnit()
   }
 
   function updateUnit(unitId: number, updates: Partial<Unit>) {
@@ -71,9 +75,8 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  function preparEndTurn() {
+  function prepareEndTurn() {
     const actionStore = useActionStore()
-    const highlight = useActionHighlight()
     const signal = useSignalR()
 
     const actions = actionStore.submitedActions()
@@ -96,14 +99,17 @@ export const useGameStore = defineStore('game', () => {
 
     // Computed
     selectedUnit,
+    myPlayer,
     isMyUnitSelected,
         
     // Actions
+    isPlayerReady,
     getUnitById,
     updateGameState,
+    updatePlayers,
     selectUnit,
     deselectUnit,
     updateUnit,
-    endTurn: preparEndTurn,
+    prepareEndTurn,
   }
 })

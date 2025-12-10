@@ -2,11 +2,77 @@ import { useGameStore } from '@/stores/gameStore'
 import { useActionStore } from '@/stores/actionStore'
 import { state, usePixiGame } from './usePixiGame'
 import { useActionSystem } from './useActionSystem'
-import { ActionDefinition, HighlightLayer } from '@/types/action'
-import { Position } from '@/types/unit'
+import { ActionDefinition, HighlightLayer, ScheduledAction } from '@/types/action'
+import { Position, Unit } from '@/types/unit'
+import { computed, watch } from 'vue'
 
 
 export function useActionHighlight() {
+
+  function init()
+  {
+    const gameStore = useGameStore()
+    const acitonStore = useActionStore()
+
+
+    // Select unit hightlight
+    watch(
+      () => gameStore.selectedUnit,
+      (selected: Unit | null) => {
+        if (!selected)
+          clearActionHighlights()
+        else
+          renderActionHighlights(selected.unitId)
+      }
+    )
+
+
+    // Update all layers. Don't processed if target chandged
+    // const scheduledWithoutTarget = computed(() => {
+    //   const map: Map<number, ScheduledAction> = new Map()
+    //   acitonStore.scheduledActions.forEach((elem, key) => {
+    //     const { target, ...rest } = elem
+    //     map.set(key, rest)
+    //   })
+    //   return map
+    // })
+    watch(
+      () => {
+        if (!gameStore.selectedUnit) return null
+
+        const scheduled = acitonStore.getUnitScheduledAction(gameStore.selectedUnit.unitId)
+        if (!scheduled) return null
+
+        return { actionId: scheduled.actionId, confirmed: scheduled.confirmed }
+      },
+      (_) => {
+        if (!gameStore.selectedUnit)
+          clearActionHighlights()
+        else
+          renderActionHighlights(gameStore.selectedUnit.unitId)
+
+      },
+      { deep: true, immediate: true}
+    )
+
+
+    // Update target layers
+    watch(
+      () => gameStore.selectedUnit 
+            ? acitonStore.getUnitScheduledAction(gameStore.selectedUnit.unitId)?.target
+            : null,
+      (val, old) => {
+        if (!val || !old || !gameStore.selectedUnit)
+          return
+
+        if (val.x === old.x && val.y === old.y)
+          return 
+
+        updateTargetLayers(gameStore.selectedUnit.unitId)
+      },
+      { deep: true, immediate: true}
+    )
+  }
 
   function renderActionHighlights(unitId: number) {
     const gameStore = useGameStore()
@@ -46,7 +112,7 @@ export function useActionHighlight() {
     }
   }
 
-  function highlightForTarget(unitId: number)
+  function updateTargetLayers(unitId: number)
   {
     const gameStore = useGameStore()
     const actionStore = useActionStore()
@@ -96,8 +162,6 @@ export function useActionHighlight() {
   }
 
   return {
-    renderActionHighlights,
-    highlightForTarget,
-    clearActionHighlights
+    init,
   }
 }

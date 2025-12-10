@@ -16,14 +16,12 @@ const gameStore = useGameStore()
 				:key="player.playerId"
 				class="bg-gray-800 p-2 rounded text-sm"
 			>
-				<div class="flex">
-					
-				
+				<div class="flex justify-between">
 					<span :class="player.playerId === 0 ? 'text-primary' : 'text-secondary'" class="font-semibold">
 						{{ player.playerName }} &hairsp;  {{ player.playerId === gameStore.myPlayerId ? "⭐": "" }}
 					</span>
 
-					<span v-if="player.isReady" class="text-green-400 text-xs">Готов</span>
+					<span v-if="player.isReady" class="text-green-400 text-ms">✓</span>
 				</div>
 
 			</div>
