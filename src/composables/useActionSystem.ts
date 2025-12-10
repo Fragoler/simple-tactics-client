@@ -19,7 +19,7 @@ export function useActionSystem() {
     if (!gameStore.selectedUnit) return
 
     actionStore.scheduleAction(gameStore.selectedUnit.unitId, actionId)
-    actionHighlight.showActionHighlights(gameStore.selectedUnit.unitId)  
+    actionHighlight.renderActionHighlights(gameStore.selectedUnit.unitId)  
   }
 
   function canBeConfirmedWithButton(actionId: string): boolean {
@@ -53,8 +53,7 @@ export function useActionSystem() {
       return true
 
     const valids = getValidTargets(action, gameStore.selectedUnit)
-    console.debug(valids, pos, valids.includes(pos))
-    return valids.includes(pos) 
+    return valids.find(v => v.x === pos.x && v.y === pos.y) !== undefined 
   }
 
   function handleTargetFromPointer(pos: Position)

@@ -66,7 +66,9 @@ export function useGameInput() {
     
     console.debug("Left clicked")
     
-    if (!selectedUnit || !actionStore.selectedAction)
+    if (!selectedUnit || 
+        !actionStore.selectedAction || 
+        actionStore.getUnitAction(selectedUnit.unitId)?.confirmed)
       selectUnit(pos)
     else 
       confirmAction(pos, selectedUnit)

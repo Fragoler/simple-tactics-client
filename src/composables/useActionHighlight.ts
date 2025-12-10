@@ -8,7 +8,7 @@ import { Position } from '@/types/unit'
 
 export function useActionHighlight() {
 
-  function showActionHighlights(unitId: number) {
+  function renderActionHighlights(unitId: number) {
     const gameStore = useGameStore()
     const actionStore = useActionStore()
     const actionSystem = useActionSystem()
@@ -96,7 +96,7 @@ export function useActionHighlight() {
   }
 
   return {
-    showActionHighlights,
+    renderActionHighlights,
     highlightForTarget,
     clearActionHighlights
   }

@@ -47,7 +47,7 @@ export const useGameStore = defineStore('game', () => {
     selectedUnitId.value = unitId
 
     const actionHighlight = useActionHighlight()
-    actionHighlight.showActionHighlights(unitId)
+    actionHighlight.renderActionHighlights(unitId)
 
     const pixi = usePixiGame()
     pixi.highlightUnit(unitId)

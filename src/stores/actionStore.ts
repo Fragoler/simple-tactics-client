@@ -133,15 +133,16 @@ export const useActionStore = defineStore('action', () => {
 
   // Confimed action
   function confirmAction(unitId: number) {
-    const pixi = usePixiGame()
+    const highlight = useActionHighlight()
     const gameStore = useGameStore()
 
     const unit = gameStore.getUnitById(unitId)
     const scheduled = scheduledActions.value.get(unitId)
     if (!scheduled || !unit) return
 
-    pixi.requestAllUnitsUpdate()
     scheduled.confirmed = true
+
+    highlight.renderActionHighlights(unitId)
     console.debug("Action confirmed: ", scheduled.actionId)
   }
 
