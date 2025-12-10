@@ -1,21 +1,21 @@
-import { watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import type { Position, Unit } from '@/types/unit'
 import { FederatedPointerEvent } from 'pixi.js'
 import { usePixiGame } from './usePixiGame'
+import { useActionSystem } from './useActionSystem'
 
 
 
 export function useGameInput() {
 
   function setupInputHandlers() {
-    const { app } = usePixiGame()
+    const pixi = usePixiGame()
 
-    if (!app.value) return
+    if (!pixi.app.value) return
 
-    app.value.stage.on('pointerdown', handleStageClick)
-    app.value.stage.on('rightclick', handleRightClick)
-    app.value.stage.on('pointermove', handlePointerMove)
+    pixi.app.value.stage.on('pointerdown', handleStageClick)
+    pixi.app.value.stage.on('rightclick', handleRightClick)
+    pixi.app.value.stage.on('pointermove', handlePointerMove)
   }
 
   function handleStageClick(event: FederatedPointerEvent) {
@@ -48,10 +48,10 @@ export function useGameInput() {
 
   function handlePointerMove(event: FederatedPointerEvent) {
     const pixi = usePixiGame()
+    const actionSystem = useActionSystem()
 
     const pos = pixi.screenToGrid(event.globalX, event.globalY)
-    
-    //TODO: Show action preview
+    actionSystem.updateTargetFromPointer(pos)
   }
 
   function findUnitAt(pos: Position): Unit | null {
@@ -78,8 +78,8 @@ export function useGameInput() {
       return
     }
     
-    const distance = Math.abs(selectedUnit.coords.x - pos.x) + 
-                    Math.abs(selectedUnit.coords.y - pos.y)
+    // const distance = Math.abs(selectedUnit.coords.x - pos.x) + 
+    //                 Math.abs(selectedUnit.coords.y - pos.y)
     
     // if (distance > 0 && distance <= (selectedUnit. || 2)) {
     //   // Валидное перемещение

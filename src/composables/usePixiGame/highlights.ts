@@ -6,36 +6,64 @@ import { useColorSystem, ColorConfig } from '@/composables/useColorSystem'
 import { CellSize } from './constants'
 import { Position } from '@/types/unit'
 
-const actionHighlights = new Map<string, Graphics>()
+const targetGraph = new Map<string, Graphics[]>()
+const executorGraph = new Map<string, Graphics[]>()
 
-export function drawActionLayer(positions: Position[], type: HighlightType) {
+export function drawHighlights(positions: Position[], type: HighlightType, target: boolean) {
   const colors = useColorSystem()
 
   const color = colors.getActionHighlightColor(type)
   if (!color) return
-
   if (!state.highlightLayer.value) return
 
-  console.debug("Draw highlight for positions ", positions)
+  const graphs: Map<string, Graphics[]> = target ? targetGraph : executorGraph
 
+  console.debug("Draw highlight for positions ", positions)
   for (const pos of positions) {
     const highlight = drawHighlightCell(pos, color, type)
 
     state.highlightLayer.value.addChild(highlight)
-    actionHighlights.set(`${pos.x}-${pos.y}-${type}`, highlight)
+    
+    const key = `${pos.x}-${pos.y}-${type}`
+    const existing = graphs.get(key) || []
+    graphs.set(key, [...existing, highlight])
   }
 }
 
-export function clearActionHighlights() {
-  for (const [, highlight] of actionHighlights) {
-    try {
+export function clearTargetHighlights() {
+  for (const [, highlights] of targetGraph) {
+    highlights.forEach(highlight => {
+      try {
       highlight.removeFromParent()
       highlight.destroy()
-    } catch {
-
-    }
+    } catch {}
+    })
   }
-  actionHighlights.clear()
+
+  targetGraph.clear()
+}
+
+export function clearHighlights() {
+  for (const [, highlights] of targetGraph) {
+    highlights.forEach(highlight => {
+      try {
+      highlight.removeFromParent()
+      highlight.destroy()
+    } catch {}
+    })
+  }
+
+  for (const [, highlights] of executorGraph) {
+    highlights.forEach(highlight => {
+      try {
+      highlight.removeFromParent()
+      highlight.destroy()
+      } catch {}
+    })
+  }
+
+  executorGraph.clear()
+  targetGraph.clear()
 }
 
 function drawHighlightCell(pos: Position, color: ColorConfig, type: HighlightType): Graphics

@@ -1,7 +1,7 @@
 import { useGameStore } from '@/stores/gameStore'
 import { useActionStore } from '@/stores/actionStore'
 import { useActionHighlight } from './useActionHighlight'
-import type { ActionDefinition, HighlightLayer, Pattern } from '@/types/action'
+import type { ActionDefinition, Pattern } from '@/types/action'
 import type { Unit, Position } from '@/types/unit'
 
 
@@ -32,6 +32,39 @@ export function useActionSystem() {
     return action.targetType === 'None' 
   }
 
+  function updateTargetFromPointer(pos: Position)
+  {
+    const gameStore = useGameStore()
+    const actionStore = useActionStore()
+
+    if (!actionStore.selectedAction ||
+        !gameStore.selectedUnit)
+      return 
+
+    const scheduled = actionStore.getUnitAction(gameStore.selectedUnit.unitId)
+    if (!scheduled || scheduled?.confirmed)
+      return 
+    
+    const action = actionStore.getActionById(scheduled.actionId)
+    if (!action)
+      throw Error("Scheduled action has wrong id")
+
+    if (action.targetType !== 'Cell')
+      return
+
+    // So, correct target
+    const valids = getValidTargets(action, gameStore.selectedUnit)
+
+    const distance = (a: Position, b: Position) => Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)) 
+    const closest = valids.reduce((best, current) => {
+      return distance(best, pos) < distance(current, pos) ? best : current
+    })
+    if (!closest)
+      return
+
+    actionStore.updateActionTarget(gameStore.selectedUnit.unitId, closest)
+  }
+
   //
 
 
@@ -45,10 +78,10 @@ export function useActionSystem() {
     action: ActionDefinition,
     executor: Unit
   ): Position[] {
-    const layers: HighlightLayer[] = action.highlightLayers.filter(l => l.relative === 'Executor')
-    if (!layers) return []
+    const layer = action.highlightLayers.find(l => l.relative === 'Executor')
+    if (!layer) return []
 
-    getPositionsByPattern(
+    return getPositionsByPattern(
       executor.coords,
       layer.pattern,
       layer.range,
@@ -169,6 +202,7 @@ export function useActionSystem() {
   return {
     selectAction,
     canBeConfirmedWithButton,
+    updateTargetFromPointer,
 
     getAvailableActions,
     getValidTargets,

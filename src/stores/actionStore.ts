@@ -119,12 +119,25 @@ export const useActionStore = defineStore('action', () => {
   // Update target for scheduled action for unit
   function updateActionTarget(
     unitId: number,
-    target: { cell?: Position; unitIds?: number[] }
+    target: Position 
   ) {
-    const scheduled = scheduledActions.value.get(unitId)
-    if (!scheduled) return
+    const highlight = useActionHighlight()
 
+    const scheduled = getUnitAction.value(unitId)
+    if (!scheduled) 
+    {
+      console.log("Non scheduled to set target")
+      return
+    }
+
+    if (scheduled.target === target) 
+    {
+      return
+    }
+
+    console.log("Update target", target)
     scheduled.target = target
+    highlight.highlightForTarget(scheduled.unitId)
   }
 
   // Confimed action

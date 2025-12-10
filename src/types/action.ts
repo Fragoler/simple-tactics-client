@@ -61,8 +61,5 @@ export interface ScheduledAction {
   actionId: string
 
   confirmed: boolean 
-  target?: {
-    cell?: Position
-    unitIds?: number[]
-  }
+  target?: Position
 }
