@@ -5,7 +5,14 @@ import Controls from './GameUI.Controls.vue'
 import ConnectionStatus from './GameUI.ConnectionStatus.vue';
 import InputTokens from './GameUI.InputTokens.vue';
 import UnitInfo from './GameUI.UnitInfo.vue'
+import { useConnectionStore } from '@/stores/connectionStore';
+import { computed } from 'vue';
 
+const conStore = useConnectionStore() 
+
+const isConnected = computed((): boolean => {
+  return conStore.connectionStatus === 'connected'
+})
 
 </script>
 
@@ -17,10 +24,10 @@ import UnitInfo from './GameUI.UnitInfo.vue'
       <ConnectionStatus />
     </div>
 
-    <PlayerStatus />
-    <Controls />
+    <PlayerStatus v-if="isConnected" />
+    <Controls v-if="isConnected" />
 
-    <UnitInfo />
+    <UnitInfo v-if="isConnected" />
     
   </div>
 </template>
