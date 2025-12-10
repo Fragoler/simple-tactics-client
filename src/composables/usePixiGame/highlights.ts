@@ -1,13 +1,57 @@
 // highlights.ts
-import { Graphics } from 'pixi.js'
+import { FillGradient, Graphics } from 'pixi.js'
 import { HighlightType } from '@/types/action'
 import { state } from './index'
 import { useColorSystem, ColorConfig } from '@/composables/useColorSystem'
-import { CellSize } from './constants'
+import { CellSize, UnitParams } from './constants'
 import { Position } from '@/types/unit'
 
 const targetGraph = new Map<string, Graphics[]>()
 const executorGraph = new Map<string, Graphics[]>()
+const selectedGraph = new Graphics()
+
+export function initHighlight()
+{
+  state.highlightLayer.value?.addChild(selectedGraph)
+}
+
+export function highlightUnit(unitId: number) {
+  const container = state.unitContainers.value.get(unitId)
+  if (!container || container.destroyed) {
+    console.error("Container is invalid")
+    return
+  }
+
+  unhighlightUnit()
+
+  const outerRadius = UnitParams.radius * 2 
+
+  const gradient = new FillGradient({
+    type: 'radial',
+    center: { x: 0.5, y: 0.5 },       
+    innerRadius: 0.0,                    
+    outerCenter: { x: 0.5, y: 0.5 },   
+    outerRadius: 0.5,                  
+    colorStops: [
+        { offset: 0,   color: '#00ff00f0' }, 
+        { offset: 0.3, color: '#00ff0090' },  
+        { offset: 0.7, color: '#00ff0050' },  
+        { offset: 1,   color: '#00ff0000' }
+    ],
+    textureSpace: 'local'
+  })
+
+  selectedGraph.circle(0, 0, outerRadius)
+               .fill(gradient)
+
+  selectedGraph.x = container.x
+  selectedGraph.y = container.y
+
+}
+
+export function unhighlightUnit() {
+  selectedGraph.clear()
+}
 
 export function drawHighlights(positions: Position[], type: HighlightType, target: boolean) {
   const colors = useColorSystem()
@@ -18,7 +62,6 @@ export function drawHighlights(positions: Position[], type: HighlightType, targe
 
   const graphs: Map<string, Graphics[]> = target ? targetGraph : executorGraph
 
-  console.debug("Draw highlight for positions ", positions)
   for (const pos of positions) {
     const highlight = drawHighlightCell(pos, color, type)
 
@@ -91,4 +134,7 @@ function drawHighlightCell(pos: Position, color: ColorConfig, type: HighlightTyp
            )
            .stroke({alpha: color.alpha, color: color.color, width: CellSize * 0.02})
   }
+
+
+
 }

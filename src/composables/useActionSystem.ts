@@ -32,7 +32,32 @@ export function useActionSystem() {
     return action.targetType === 'None' 
   }
 
-  function updateTargetFromPointer(pos: Position)
+  function canConfirmWithTarget(pos: Position): boolean
+  {
+    const gameStore = useGameStore()
+    const actionStore = useActionStore()
+
+    if (!actionStore.selectedAction ||
+        !gameStore.selectedUnit)
+      return false
+
+    const scheduled = actionStore.getUnitAction(gameStore.selectedUnit.unitId)
+    if (!scheduled || scheduled.confirmed)
+      return false
+    
+    const action = actionStore.getActionById(scheduled.actionId)
+    if (!action)
+      throw Error("Scheduled action has wrong id")
+
+    if (action.targetType !== 'Cell')
+      return true
+
+    const valids = getValidTargets(action, gameStore.selectedUnit)
+    console.debug(valids, pos, valids.includes(pos))
+    return valids.includes(pos) 
+  }
+
+  function handleTargetFromPointer(pos: Position)
   {
     const gameStore = useGameStore()
     const actionStore = useActionStore()
@@ -201,8 +226,9 @@ export function useActionSystem() {
 
   return {
     selectAction,
+    canConfirmWithTarget,
     canBeConfirmedWithButton,
-    updateTargetFromPointer,
+    handleTargetFromPointer,
 
     getAvailableActions,
     getValidTargets,

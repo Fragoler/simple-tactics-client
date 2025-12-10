@@ -4,6 +4,7 @@ import type { GameState, Player, MapState } from '@/types/game'
 import type { Unit } from '@/types/unit'
 import { useActionStore } from './actionStore'
 import { useActionHighlight } from '@/composables/useActionHighlight'
+import { usePixiGame } from '@/composables/usePixiGame'
 
 export const useGameStore = defineStore('game', () => {
   
@@ -47,6 +48,9 @@ export const useGameStore = defineStore('game', () => {
 
     const actionHighlight = useActionHighlight()
     actionHighlight.showActionHighlights(unitId)
+
+    const pixi = usePixiGame()
+    pixi.highlightUnit(unitId)
   }
 
   function deselectUnit() {
@@ -54,6 +58,9 @@ export const useGameStore = defineStore('game', () => {
 
     const actionHighlight = useActionHighlight()
     actionHighlight.clearActionHighlights()
+
+    const pixi = usePixiGame()
+    pixi.unhighlightUnit()
   }
 
   function updateUnit(unitId: number, updates: Partial<Unit>) {

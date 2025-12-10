@@ -1,6 +1,7 @@
 import { Container } from 'pixi.js'
 import type { Application } from 'pixi.js'
 import { state } from './index'
+import { initHighlight } from './highlights'
 
 export function initializeLayers(app: Application) {
   state.backgroundLayer.value = new Container()
@@ -12,4 +13,6 @@ export function initializeLayers(app: Application) {
   app.stage.addChild(state.gridLayer.value)
   app.stage.addChild(state.highlightLayer.value)
   app.stage.addChild(state.unitLayer.value)
+
+  initHighlight()
 }

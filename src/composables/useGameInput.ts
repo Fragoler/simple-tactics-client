@@ -3,6 +3,7 @@ import type { Position, Unit } from '@/types/unit'
 import { FederatedPointerEvent } from 'pixi.js'
 import { usePixiGame } from './usePixiGame'
 import { useActionSystem } from './useActionSystem'
+import { useActionStore } from '@/stores/actionStore'
 
 
 
@@ -13,36 +14,39 @@ export function useGameInput() {
 
     if (!pixi.app.value) return
 
+    pixi.app.value.canvas.addEventListener('contextmenu', (e) => e.preventDefault())
+
+
     pixi.app.value.stage.on('pointerdown', handleStageClick)
-    pixi.app.value.stage.on('rightclick', handleRightClick)
     pixi.app.value.stage.on('pointermove', handlePointerMove)
   }
 
-  function handleStageClick(event: FederatedPointerEvent) {
-    const pixi = usePixiGame()
+  function removeInputHandlers() {
+    const { app } = usePixiGame()
 
-    const pos = pixi.screenToGrid(event.globalX, event.globalY)
-    const unit = findUnitAt(pos)
+    if (!app.value) return
     
-    if (unit) {
-      onUnitClick(unit)
-    } else {
-      onEmptyCellClick(pos)
-    }
+    app.value.stage.off('click', handleStageClick)
+    app.value.stage.off('pointermove', handlePointerMove)
   }
 
-  function handleRightClick(event: FederatedPointerEvent) {
-    const pixi = usePixiGame()
-    const gameStore = useGameStore()
-
+  function handleStageClick(event: FederatedPointerEvent) {
     event.preventDefault()
     
+    const pixi = usePixiGame()
     const pos = pixi.screenToGrid(event.globalX, event.globalY)
-    const unit = findUnitAt(pos)
     
-    if (unit && gameStore.selectedUnit) {
-      // Атака
-      console.log('Attack', unit.unitId)
+    switch (event.button)
+    {
+      case 0:
+        onLeftClick(pos)
+        break
+      case 1:
+      case 2:
+        onRightClick(pos)
+        break
+      default: 
+        console.error("Unknown button clicked!", event.button)
     }
   }
 
@@ -51,53 +55,63 @@ export function useGameInput() {
     const actionSystem = useActionSystem()
 
     const pos = pixi.screenToGrid(event.globalX, event.globalY)
-    actionSystem.updateTargetFromPointer(pos)
+    actionSystem.handleTargetFromPointer(pos)
   }
+
+    function onLeftClick(pos: Position) {
+    const gameStore = useGameStore()
+    const actionStore = useActionStore()
+
+    const selectedUnit = gameStore.selectedUnit
+    
+    console.debug("Left clicked")
+    
+    if (!selectedUnit || !actionStore.selectedAction)
+      selectUnit(pos)
+    else 
+      confirmAction(pos, selectedUnit)
+
+  }
+
+  function onRightClick(pos: Position) {
+    const gameStore = useGameStore()
+
+    console.debug("Right clicked")
+    const unit = findUnitAt(pos)
+    if (!unit && gameStore.selectedUnit)
+      gameStore.deselectUnit()
+    else if (unit)
+      selectUnit(pos)
+  }
+
+
+  function selectUnit(pos: Position) {
+    const gameStore = useGameStore()
+
+    const unit = findUnitAt(pos)
+    console.debug("Select unit", unit?.unitId)
+    if (unit)
+      gameStore.selectUnit(unit.unitId)
+  }
+
+  function confirmAction(pos: Position, unit: Unit) {
+    const actionSystem = useActionSystem()
+    const actionStore = useActionStore()
+
+    console.debug("Try confirm action", )
+
+    if (!actionSystem.canConfirmWithTarget(pos))
+      return 
+
+    actionStore.confirmAction(unit.unitId)
+  }
+
 
   function findUnitAt(pos: Position): Unit | null {
     const gameStore = useGameStore()
     return gameStore.units.find(u => 
       u.coords.x === pos.x && u.coords.y === pos.y
     ) || null
-  }
-
-  function onUnitClick(unit: Unit) {
-    const gameStore = useGameStore()
-    if (gameStore.selectedUnit?.unitId === unit.unitId) {
-      gameStore.deselectUnit()
-    } else {
-      gameStore.selectUnit(unit.unitId)
-    }
-  }
-
-  function onEmptyCellClick(pos: Position) {
-    const gameStore = useGameStore()
-    const selectedUnit = gameStore.selectedUnit
-    
-    if (!selectedUnit) {
-      return
-    }
-    
-    // const distance = Math.abs(selectedUnit.coords.x - pos.x) + 
-    //                 Math.abs(selectedUnit.coords.y - pos.y)
-    
-    // if (distance > 0 && distance <= (selectedUnit. || 2)) {
-    //   // Валидное перемещение
-    //   //gameStore.moveUnit(selectedUnit.unitId, pos)
-    // } else {
-    //   // Клик вне досягаемости - сбрасываем выбор
-    //   gameStore.deselectUnit()
-    // }
-  }
-
-  function removeInputHandlers() {
-    const { app } = usePixiGame()
-
-    if (!app.value) return
-    
-    app.value.stage.off('pointerdown', handleStageClick)
-    app.value.stage.off('rightclick', handleRightClick)
-    app.value.stage.off('pointermove', handlePointerMove)
   }
 
   return {

@@ -4,7 +4,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { initializeLayers } from './layers'
 import { drawMap } from './rendering'
 import { requestAllUnitsUpdate, requestUnitsUpdate } from './units'
-import { clearHighlights, clearTargetHighlights, drawHighlights } from './highlights'
+import { clearHighlights, clearTargetHighlights, drawHighlights, highlightUnit, unhighlightUnit } from './highlights'
 import { screenToGrid } from './utils'
 import { useColorSystem } from '@/composables/useColorSystem'
 import { CellSize } from './constants'
@@ -120,6 +120,9 @@ export function usePixiGame() {
     drawHighlights,
     clearHighlights,
     clearTargetHighlights,
+
+    highlightUnit,
+    unhighlightUnit,
     
     screenToGrid,
     destroy,

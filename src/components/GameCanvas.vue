@@ -3,12 +3,12 @@ import { ref, onMounted } from 'vue'
 import { usePixiGame } from '@/composables/usePixiGame'
 
 const canvasRef = ref<HTMLCanvasElement>()
-
 const pixi = usePixiGame()
 
 onMounted(async () => {
   if (!canvasRef.value) return
-  
+
+
   await pixi.initApp(canvasRef.value)
 })
 

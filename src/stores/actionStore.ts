@@ -124,18 +124,9 @@ export const useActionStore = defineStore('action', () => {
     const highlight = useActionHighlight()
 
     const scheduled = getUnitAction.value(unitId)
-    if (!scheduled) 
-    {
-      console.log("Non scheduled to set target")
+    if (!scheduled || scheduled.target === target) 
       return
-    }
 
-    if (scheduled.target === target) 
-    {
-      return
-    }
-
-    console.log("Update target", target)
     scheduled.target = target
     highlight.highlightForTarget(scheduled.unitId)
   }
