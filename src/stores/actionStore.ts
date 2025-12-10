@@ -21,7 +21,7 @@ export const useActionStore = defineStore('action', () => {
     if (!gameStore.selectedUnit)
       return undefined
 
-    const id = getUnitAction.value(gameStore.selectedUnit.unitId)?.actionId
+    const id = getUnitScheduledAction.value(gameStore.selectedUnit.unitId)?.actionId
     return id ? getActionById(id) : undefined
   })
 
@@ -43,7 +43,7 @@ export const useActionStore = defineStore('action', () => {
     return (unitId: number): boolean => scheduledActions.value.has(unitId)
   })
 
-  const getUnitAction = computed(()  => {
+  const getUnitScheduledAction = computed(()  => {
     return (unitId: number): ScheduledAction | undefined => scheduledActions.value.get(unitId)
   })
   ///
@@ -123,7 +123,7 @@ export const useActionStore = defineStore('action', () => {
   ) {
     const highlight = useActionHighlight()
 
-    const scheduled = getUnitAction.value(unitId)
+    const scheduled = getUnitScheduledAction.value(unitId)
     if (!scheduled || scheduled.target === target) 
       return
 
@@ -156,6 +156,20 @@ export const useActionStore = defineStore('action', () => {
     actionHighlight.clearActionHighlights()
   }
 
+  function unconfirmAction(unitId: number) {
+    const actionHighlight = useActionHighlight()
+    const pixi = usePixiGame()
+
+    const scheduled = getUnitScheduledAction.value(unitId)
+    if (!scheduled)
+      throw Error("Unconfirm not existing action")
+
+    scheduled.confirmed = false
+
+    pixi.requestAllUnitsUpdate()
+    actionHighlight.clearActionHighlights()
+  }
+
   function setHoverPosition(pos: Position | null) {
     hoverPosition.value = pos
   }
@@ -175,7 +189,7 @@ export const useActionStore = defineStore('action', () => {
     selectedAction,
     isSelectedActionConfirmed,
     unitHasAction,
-    getUnitAction,
+    getUnitScheduledAction,
 
     // Actions
     registerActions,
@@ -186,6 +200,7 @@ export const useActionStore = defineStore('action', () => {
     scheduleAction,
     updateActionTarget,
     confirmAction,
+    unconfirmAction,
     cancelAction,
     setHoverPosition,
     submitedActions,

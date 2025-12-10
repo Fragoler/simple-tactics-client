@@ -68,7 +68,7 @@ export function useGameInput() {
     
     if (!selectedUnit || 
         !actionStore.selectedAction || 
-        actionStore.getUnitAction(selectedUnit.unitId)?.confirmed)
+        actionStore.getUnitScheduledAction(selectedUnit.unitId)?.confirmed)
       unitSelection(pos)
     else 
       confirmAction(pos, selectedUnit)
@@ -76,8 +76,17 @@ export function useGameInput() {
   }
 
   function onRightClick(pos: Position) {
+    const gameStore = useGameStore()
+    const actionStore = useActionStore()
+    const selectedUnit = gameStore.selectedUnit
+
     console.debug("Right clicked")
-    unitSelection(pos)
+
+    if (selectedUnit && 
+        actionStore.getUnitScheduledAction(selectedUnit.unitId)?.confirmed)
+      actionStore.unconfirmAction(selectedUnit.unitId)
+    else
+      unitSelection(pos)
   }
 
   function unitSelection(pos: Position)

@@ -41,7 +41,7 @@ export function useActionSystem() {
         !gameStore.selectedUnit)
       return false
 
-    const scheduled = actionStore.getUnitAction(gameStore.selectedUnit.unitId)
+    const scheduled = actionStore.getUnitScheduledAction(gameStore.selectedUnit.unitId)
     if (!scheduled || scheduled.confirmed)
       return false
     
@@ -65,7 +65,7 @@ export function useActionSystem() {
         !gameStore.selectedUnit)
       return 
 
-    const scheduled = actionStore.getUnitAction(gameStore.selectedUnit.unitId)
+    const scheduled = actionStore.getUnitScheduledAction(gameStore.selectedUnit.unitId)
     if (!scheduled || scheduled?.confirmed)
       return 
     

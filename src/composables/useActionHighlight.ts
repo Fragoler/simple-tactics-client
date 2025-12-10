@@ -19,7 +19,7 @@ export function useActionHighlight() {
     const unit = gameStore.units.find(u => u.unitId === unitId)
     if (!unit) return
 
-    const scheduled = actionStore.getUnitAction(unitId)
+    const scheduled = actionStore.getUnitScheduledAction(unitId)
     if (!scheduled) return
 
     const action = actionStore.getActionById(scheduled.actionId)
@@ -58,7 +58,7 @@ export function useActionHighlight() {
     const unit = gameStore.units.find(u => u.unitId === unitId)
     if (!unit) return
 
-    const scheduled = actionStore.getUnitAction(unitId)
+    const scheduled = actionStore.getUnitScheduledAction(unitId)
     if (!scheduled) return
 
     const action = actionStore.getActionById(scheduled.actionId)

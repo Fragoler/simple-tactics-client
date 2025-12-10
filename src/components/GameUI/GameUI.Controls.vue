@@ -32,7 +32,7 @@ function onActionClick(actionId: string) {
       !gameStore.isMyUnitSelected)
     return
 
-  const action = actionStore.getUnitAction(gameStore.selectedUnit.unitId)
+  const action = actionStore.getUnitScheduledAction(gameStore.selectedUnit.unitId)
 
   if (action?.actionId === actionId &&
       !actionStore.isUnitActionConfirmed(gameStore.selectedUnit.unitId) &&
@@ -45,7 +45,7 @@ function onActionClick(actionId: string) {
 const hasUnitsWithoutConfirmed = computed(() => {
   return gameStore.units.some(
     u => u.playerId === gameStore.myPlayerId &&
-        (!actionStore.unitHasAction(u.unitId) || !actionStore.getUnitAction(u.unitId)?.confirmed)
+        (!actionStore.unitHasAction(u.unitId) || !actionStore.getUnitScheduledAction(u.unitId)?.confirmed)
   )
 })
 
