@@ -102,13 +102,13 @@ export function useActionSystem() {
     action: ActionDefinition,
     executor: Unit
   ): Position[] {
-    const layer = action.highlightLayers.find(l => l.relative === 'Executor')
-    if (!layer) return []
+    const pattern = action.targetFilter.pattern
+    const range = action.targetFilter.range ?? null
 
     return getPositionsByPattern(
       executor.coords,
-      layer.pattern,
-      layer.range,
+      pattern,
+      range,
       action.targetFilter
     )
   }
@@ -151,7 +151,7 @@ export function useActionSystem() {
   function getPositionsByPattern(
     center: Position,
     pattern: Pattern,
-    range: number,
+    range: number | null,
     filter: ActionDefinition['targetFilter']
   ): Position[] {
     const gameStore = useGameStore()
@@ -162,9 +162,15 @@ export function useActionSystem() {
 
     switch (pattern) {
       case 'Manhattan':
+        if (!range)
+          throw Error(`Range is unsetted for pattern ${pattern}`)
+
         positions.push(...getManhattanPositions(center, range))
         break
       case 'Circle':
+        if (!range)
+          throw Error(`Range is unsetted for pattern ${pattern}`)
+        
         positions.push(...getCirclePositions(center, range))
         break
       case 'Adjacent':
