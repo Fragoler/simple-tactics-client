@@ -1,4 +1,4 @@
-import { ConnectionStatus, LogEntry } from '@/types/game'
+import { ConnectionStatus } from '@/types/game'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 

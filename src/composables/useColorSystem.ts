@@ -51,7 +51,7 @@ function getCSSColor(variableName: string): number {
 }
 
 
-function getPlayerStringColor(playerId: number | null) {
+function getPlayerStringColor(playerId: number | undefined) {
   switch(playerId) {
     case 0:  return '--game-general-player1'
     case 1:  return '--game-general-player2'
@@ -59,7 +59,7 @@ function getPlayerStringColor(playerId: number | null) {
   }
 }
 
-function getPlayerColor(playerId: number | null)
+function getPlayerColor(playerId: number | undefined)
 {
   return getCSSColor(getPlayerStringColor(playerId))
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onUnmounted } from 'vue'
-import { useSignalR } from '@/composables/useSignalR.ts'
+import { useSignalR } from './composables/useSignalR'
 import GameCanvas from './components/GameCanvas.vue'
 import GameUI from './components/GameUI/GameUI.vue';
 

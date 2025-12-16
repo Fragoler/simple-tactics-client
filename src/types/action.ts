@@ -32,7 +32,7 @@ export type TargetType =
 
 export interface HighlightLayer {
   pattern: Pattern
-  range: number
+  range: number | undefined
   relative: RelativeType
   type: HighlightType
   visibility: HighlightVisibility
@@ -50,7 +50,6 @@ export interface ActionDefinition {
     range?: number
     requireEnemy?: boolean
     requireAlly?: boolean
-    maxTargets?: number
   }
 
   highlightLayers: HighlightLayer[]

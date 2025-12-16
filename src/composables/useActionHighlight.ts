@@ -1,10 +1,11 @@
+import { watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useActionStore } from '@/stores/actionStore'
-import { state, usePixiGame } from './usePixiGame'
-import { useActionSystem } from './useActionSystem'
-import { ActionDefinition, HighlightLayer, ScheduledAction } from '@/types/action'
+import { state, usePixiGame } from '@/composables/usePixiGame'
+import { useActionSystem } from '@/composables/useActionSystem'
+import { ActionDefinition, HighlightLayer } from '@/types/action'
 import { Position, Unit } from '@/types/unit'
-import { computed, watch } from 'vue'
+
 
 
 export function useActionHighlight() {
@@ -26,16 +27,6 @@ export function useActionHighlight() {
       }
     )
 
-
-    // Update all layers. Don't processed if target chandged
-    // const scheduledWithoutTarget = computed(() => {
-    //   const map: Map<number, ScheduledAction> = new Map()
-    //   acitonStore.scheduledActions.forEach((elem, key) => {
-    //     const { target, ...rest } = elem
-    //     map.set(key, rest)
-    //   })
-    //   return map
-    // })
     watch(
       () => {
         if (!gameStore.selectedUnit) return null

@@ -1,16 +1,20 @@
 import { ref, watch } from 'vue'
 import { Application, Container } from 'pixi.js'
-import { useGameStore } from '@/stores/gameStore'
+
 import { initializeLayers } from './layers'
 import { drawMap } from './rendering'
-import { requestAllUnitsUpdate } from './units'
 import { clearHighlights, clearTargetHighlights, drawHighlights, highlightUnit, unhighlightUnit } from './highlights'
 import { screenToGrid } from './utils'
-import { useColorSystem } from '@/composables/useColorSystem'
 import { CellSize } from './constants'
-import { useGameInput } from '../useGameInput'
-import { Unit } from '@/types/unit'
+import { requestAllUnitsUpdate } from './units'
+
+import { useGameStore } from '@/stores/gameStore'
+import { useColorSystem } from '@/composables/useColorSystem'
+import { useGameInput } from '@/composables/useGameInput'
 import { useActionStore } from '@/stores/actionStore'
+
+import { Unit } from '@/types/unit'
+
 
 export const state = {
   app:             ref<Application | null>(null),

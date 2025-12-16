@@ -5,6 +5,7 @@ import type { GameState, Player } from '@/types/game'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { useActionStore } from '@/stores/actionStore'
 import { ActionDefinition, ScheduledAction } from '@/types/action'
+import { useEffectStore } from '@/stores/effectStore'
 
 const connection = ref<signalR.HubConnection | null>(null)
 
@@ -53,7 +54,6 @@ async function addHandelers() {
     gameStore.updatePlayers(players)
   })
 
-
   connection.value.on('gameActions', (actions: ActionDefinition[]) => {
     console.log('Action definitions received:', actions)
 
@@ -61,6 +61,22 @@ async function addHandelers() {
     actionStore.registerActions(actions)
   })
 
+  connection.value.on('actionResults', (effectDtos: any[]) => {
+    console.log('Action results received:', effectDtos)
+
+    const effectStore = useEffectStore()
+    const factory = useEffectFactory()
+    const player = useEffectPlayer()
+
+    try {
+      const effects = factory.createBatch(effectDtos)
+      effectStore.enqueueEffects(effects)
+      
+      player.playQueue()
+    } catch (error) {
+      console.error('Failed to process action results:', error)
+    }
+  })
 
   // server error 
   connection.value.on('error', (message: string) => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useColorSystem } from '@/composables/useColorSystem';
+import { useColorSystem } from '@/composables/useColorSystem'
 import { useGameStore } from '@/stores/gameStore';
 import { Unit } from '@/types/unit';
 

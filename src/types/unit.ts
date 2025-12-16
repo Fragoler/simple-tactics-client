@@ -2,7 +2,7 @@ export type UnitSprite = 'Triangle' | 'Square' | 'Circle'
 
 export interface Unit {
   unitId: number
-  playerId: number | null 
+  playerId: number | undefined
   coords : Position
 
   sprite : UnitSprite

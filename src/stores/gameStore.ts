@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { GameState, Player, MapState } from '@/types/game'
 import type { Unit } from '@/types/unit'
-import { useActionStore } from './actionStore'
+import { useActionStore } from '@/stores/actionStore'
 import { useSignalR } from '@/composables/useSignalR'
 
 export const useGameStore = defineStore('game', () => {
@@ -35,11 +35,14 @@ export const useGameStore = defineStore('game', () => {
 
 
   // Actions
-  function isPlayerReady(playerId: number)
+  function isPlayerReady(playerId: number | undefined)
   {
+    if (playerId === undefined)
+      return true
+
     const player = players.value.find(p => p.playerId === playerId)
     if (!player)
-      throw Error("Unknown player id")
+      throw Error("Unknown player id: " + playerId)
 
     return player.isReady
   }
