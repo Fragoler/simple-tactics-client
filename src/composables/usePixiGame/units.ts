@@ -118,28 +118,18 @@ function animateMove(container: Container, targetX: number, targetY: number, dur
 }
 
 function removeUnit(unitId: number) {
-  console.log('[PixiJS removeUnit] Called for unit', unitId)
-
-
   const container = state.unitContainers.value.get(unitId) as Container<any>
   if (!container)
-  {
-    console.log('[PixiJS removeUnit] Container not found', unitId)
     return
-  }
   
   state.unitContainers.value.delete(unitId)
 
   if (!container.destroyed)
   {
-    console.log('[PixiJS removeUnit] Destroying container', unitId)
     container.removeFromParent()
     container.destroy(true)
   }
-  else
-  {
-    console.log('[PixiJS removeUnit] Container already destroyed', unitId)
-  }
+
 }
 
 function syncUnits(newUnits: Unit[]) {
