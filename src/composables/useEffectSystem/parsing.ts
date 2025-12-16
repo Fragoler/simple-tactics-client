@@ -120,14 +120,12 @@ export class DamageEffect implements IEffect {
   constructor(
     public readonly duration: number,
     public readonly unitId: number,
-    public readonly targetUnitId: number,
     public readonly amount: number,
-    public readonly newHealth: number
   ) {}
 
   static fromDto(dto: EffectDto): DamageEffect | null {
-    if (!dto.unitId || !dto.targetUnitId || !dto.amount || dto.newHealth === undefined) return null
-    return new DamageEffect(dto.duration, dto.unitId, dto.targetUnitId, dto.amount, dto.newHealth)
+    if (!dto.unitId || !dto.unitId || !dto.amount) return null
+    return new DamageEffect(dto.duration, dto.unitId, dto.amount)
   }
 
   async doEffect(): Promise<void> {
@@ -137,14 +135,14 @@ export class DamageEffect implements IEffect {
     const pixi = usePixiGame()
     const gameStore = useGameStore()
 
-    const unit = gameStore.getUnitById(this.targetUnitId)
+    const unit = gameStore.getUnitById(this.unitId)
     if (!unit) {
-      console.warn(`Unit ${this.targetUnitId} not found`)
+      console.warn(`Unit ${this.unitId} not found`)
       return
     }
 
-    await pixi.drawDamageHit(this.targetUnitId, this.duration)
-    unit.curHealth = this.newHealth
+    await pixi.drawDamageHit(this.unitId, this.duration)
+    unit.curHealth -= this.amount
   }
 }
 
@@ -168,14 +166,8 @@ export class DeathEffect implements IEffect {
     const pixi = usePixiGame()
     const gameStore = useGameStore()
 
-    console.log('[DeathEffect] START animation for unit', this.unitId)
     await pixi.animateUnitDeath(this.unitId, this.duration)
-    console.log('[DeathEffect] FINISHED animation for unit', this.unitId)
-
-
-    console.log('[DeathEffect] Removing unit from store', this.unitId)
     gameStore.removeUnit(this.unitId)
-    console.log('[DeathEffect] Unit removed from store', this.unitId)
   }
 }
 

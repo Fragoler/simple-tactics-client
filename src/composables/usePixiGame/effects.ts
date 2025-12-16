@@ -279,12 +279,7 @@ export async function animateUnitDeath(
 ): Promise<void> {
   const container = state.unitContainers.value.get(unitId)
   if (!container || container.destroyed)
-  {
-    console.warn('[animateUnitDeath] Container not found or destroyed', unitId)
     return
-  } 
-
-  console.log('[animateUnitDeath] START for unit', unitId, 'duration:', duration)
 
   return new Promise((resolve) => {
     const startTime = Date.now()
@@ -293,10 +288,6 @@ export async function animateUnitDeath(
       const elapsed = Date.now() - startTime
       const progress = Math.min(elapsed / duration, 1)
 
-
-      console.log('[animateUnitDeath] Frame:', unitId, 'progress:', progress.toFixed(2))
-
-
       container.alpha = 1 - progress
       container.scale.set(1 - progress * 0.5)
       container.rotation = progress * Math.PI * 2
@@ -304,9 +295,7 @@ export async function animateUnitDeath(
       if (progress < 1) {
         requestAnimationFrame(animate)
       } else {
-        console.log('[animateUnitDeath] Animation complete, waiting for next frame')
         requestAnimationFrame(() => {
-          console.log('[animateUnitDeath] RESOLVED for unit', unitId)
           resolve()
         })
       }
