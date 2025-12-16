@@ -7,6 +7,15 @@ import { clearHighlights, clearTargetHighlights, drawHighlights, highlightUnit, 
 import { screenToGrid } from './utils'
 import { CellSize } from './constants'
 import { requestAllUnitsUpdate } from './units'
+import {
+  drawProjectile,
+  drawMeleeAttack,
+  drawExplosion,
+  drawDamageHit,
+  drawHealEffect,
+  animateUnitDeath,
+  animateUnitMove
+} from './effects'
 
 import { useGameStore } from '@/stores/gameStore'
 import { useColorSystem } from '@/composables/useColorSystem'
@@ -149,8 +158,17 @@ export function usePixiGame() {
     drawHighlights,
     clearHighlights,
     clearTargetHighlights,
+
+    drawProjectile,
+    drawMeleeAttack,
+    drawExplosion,
+    drawDamageHit,
+    drawHealEffect,
+    animateUnitDeath,
+    animateUnitMove,
     
     screenToGrid,
     destroy,
+
   }
 }

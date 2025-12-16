@@ -4,6 +4,7 @@ import { FederatedPointerEvent } from 'pixi.js'
 import { usePixiGame } from './usePixiGame'
 import { useActionSystem } from './useActionSystem'
 import { useActionStore } from '@/stores/actionStore'
+import { useEffectStore } from '@/stores/effectStore'
 
 
 
@@ -36,6 +37,10 @@ export function useGameInput() {
     const pixi = usePixiGame()
     const pos = pixi.screenToGrid(event.globalX, event.globalY)
     
+    const effectStore = useEffectStore()
+    if (effectStore.isPlaying)
+      return
+
     switch (event.button)
     {
       case 0:

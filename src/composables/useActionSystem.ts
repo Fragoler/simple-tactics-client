@@ -1,6 +1,5 @@
 import { useGameStore } from '@/stores/gameStore'
 import { useActionStore } from '@/stores/actionStore'
-import { useActionHighlight } from './useActionHighlight'
 import type { ActionDefinition, Pattern } from '@/types/action'
 import type { Unit, Position } from '@/types/unit'
 import { watch } from 'vue'

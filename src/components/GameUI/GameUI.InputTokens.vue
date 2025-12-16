@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useSignalR } from '@/composables/useSignalR.ts'
+import { useSignalR } from '@/composables/useSignalR'
 import { useConnectionStore } from '@/stores/connectionStore'
 
 

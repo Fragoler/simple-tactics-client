@@ -6,6 +6,7 @@ import { useConnectionStore } from '@/stores/connectionStore'
 import { useActionStore } from '@/stores/actionStore'
 import { ActionDefinition, ScheduledAction } from '@/types/action'
 import { useEffectStore } from '@/stores/effectStore'
+import { useEffectSystem } from './useEffectSystem'
 
 const connection = ref<signalR.HubConnection | null>(null)
 
@@ -64,15 +65,9 @@ async function addHandelers() {
   connection.value.on('actionResults', (effectDtos: any[]) => {
     console.log('Action results received:', effectDtos)
 
-    const effectStore = useEffectStore()
-    const factory = useEffectFactory()
-    const player = useEffectPlayer()
-
     try {
-      const effects = factory.createBatch(effectDtos)
-      effectStore.enqueueEffects(effects)
-      
-      player.playQueue()
+      const effectSystem = useEffectSystem()
+      effectSystem.addEffects(effectDtos)
     } catch (error) {
       console.error('Failed to process action results:', error)
     }

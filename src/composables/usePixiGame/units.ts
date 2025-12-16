@@ -5,12 +5,13 @@ import { getPolygonPoints } from './utils'
 import { useColorSystem } from '@/composables/useColorSystem'
 import { CellSize, UnitParams } from './constants'
 import { useGameStore } from '@/stores/gameStore'
+import { markRaw } from 'vue'
 
 
 function addUnit(unit: Unit) {
   if (!state.isLayersInitialized) return
   
-  const container = new Container()
+  const container = markRaw(new Container())
 
   container.x = (unit.coords.x + 0.5) * CellSize
   container.y = (unit.coords.y + 0.5) * CellSize
@@ -117,16 +118,27 @@ function animateMove(container: Container, targetX: number, targetY: number, dur
 }
 
 function removeUnit(unitId: number) {
+  console.log('[PixiJS removeUnit] Called for unit', unitId)
+
+
   const container = state.unitContainers.value.get(unitId) as Container<any>
   if (!container)
-    return 
+  {
+    console.log('[PixiJS removeUnit] Container not found', unitId)
+    return
+  }
   
   state.unitContainers.value.delete(unitId)
 
   if (!container.destroyed)
   {
+    console.log('[PixiJS removeUnit] Destroying container', unitId)
     container.removeFromParent()
     container.destroy(true)
+  }
+  else
+  {
+    console.log('[PixiJS removeUnit] Container already destroyed', unitId)
   }
 }
 

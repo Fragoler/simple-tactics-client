@@ -5,6 +5,7 @@ import type { Unit } from '@/types/unit'
 import { useActionStore } from '@/stores/actionStore'
 import { useSignalR } from '@/composables/useSignalR'
 
+
 export const useGameStore = defineStore('game', () => {
   
   // State
@@ -15,7 +16,6 @@ export const useGameStore = defineStore('game', () => {
 	const myPlayerId = ref<number>()
 
   const selectedUnitId = ref<number | null>(null)
-  const isPlanningPhase = ref<boolean>(true)
 
   // Computed
   const selectedUnit = computed((): Unit | null => {
@@ -78,6 +78,11 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function removeUnit(unitId: number)
+  {
+    units.value = units.value.filter(u => u.unitId !== unitId)
+  }
+
   function prepareEndTurn() {
     const actionStore = useActionStore()
     const signal = useSignalR()
@@ -86,10 +91,8 @@ export const useGameStore = defineStore('game', () => {
 
     signal.endTurn(actions)
     
-    // deselectUnit()
-    // actionStore.reset()
-    // highlight.clearActionHighlights()
-    // isPlanningPhase.value = false
+    deselectUnit()
+    actionStore.reset()
   }
 
   return {
@@ -97,7 +100,6 @@ export const useGameStore = defineStore('game', () => {
     units,
     players,
     map,
-    isPlanningPhase,
     myPlayerId,
 
     // Computed
@@ -113,6 +115,7 @@ export const useGameStore = defineStore('game', () => {
     selectUnit,
     deselectUnit,
     updateUnit,
+    removeUnit,
     prepareEndTurn,
   }
 })

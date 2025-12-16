@@ -1,23 +1,16 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { IEffect } from '@/types/effect'
 
 export const useEffectStore = defineStore('effect', () => {
   const queue = ref<IEffect[]>([])
-  const playing = ref<IEffect | null>(null)
   const isPlaying = ref(false)
 
+  const hasEffects = computed(() => queue.value.length > 0)
 
   function enqueueEffects(effects: IEffect[]) {
+    console.debug("effects enqueued")
     queue.value.push(...effects)
-  }
-
-  function setPlaying(effect: IEffect | null) {
-    playing.value = effect
-  }
-
-  function setIsPlaying(value: boolean) {
-    isPlaying.value = value
   }
 
   function dequeueEffect(): IEffect | null {
@@ -26,22 +19,25 @@ export const useEffectStore = defineStore('effect', () => {
 
   function clearQueue() {
     queue.value = []
+    isPlaying.value = false
+  }
+
+  function setPlaying(value: boolean) {
+    isPlaying.value = value
   }
 
   return {
     // States
     queue,
-    playing,
     isPlaying,
-
+    
     // Computed
-
+    hasEffects,
 
     // Actions
     enqueueEffects,
-    setPlaying,
-    setIsPlaying,
     dequeueEffect,
     clearQueue,
+    setPlaying,
   }
 })
