@@ -86,7 +86,7 @@ export class MeleeEffect implements IEffect {
     const pixi = usePixiGame()
 
     if (this.targetUnitId) {
-      await pixi.drawMeleeAttack(this.targetUnitId, this.duration)
+      await pixi.drawMeleeAttack(this.unitId, this.duration, this.targetUnitId)
     }
   }
 }

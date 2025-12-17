@@ -50,6 +50,7 @@ export interface ActionDefinition {
     range?: number
     requireEnemy?: boolean
     requireAlly?: boolean
+    requiredFreeSpace?: boolean
   }
 
   highlightLayers: HighlightLayer[]

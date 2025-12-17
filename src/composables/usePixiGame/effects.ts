@@ -61,8 +61,9 @@ async function animateProjectile(
 
 
 export async function drawMeleeAttack(
-  targetUnitId: number,
-  duration: number
+  unitId: number,
+  duration: number,
+  targetUnitId: number
 ): Promise<void> {
   const container = state.unitContainers.value.get(targetUnitId)
   if (!container || container.destroyed) return

@@ -4,6 +4,7 @@ import type { ActionDefinition, Pattern } from '@/types/action'
 import type { Unit, Position } from '@/types/unit'
 import { watch } from 'vue'
 import { Player } from '@/types/game'
+import { fileURLToPath } from 'url'
 
 
 
@@ -136,10 +137,6 @@ export function useActionSystem() {
     range: number | null,
     filter: ActionDefinition['targetFilter']
   ): Position[] {
-    const gameStore = useGameStore()
-
-    if (!gameStore.map) return []
-
     const positions: Position[] = []
 
     switch (pattern) {
@@ -166,11 +163,27 @@ export function useActionSystem() {
         break
     }
 
-    // FIXME: USE FILTER!
-    return positions.filter(pos =>
+    return filterPositions(positions, filter)
+  }
+
+  function filterPositions(positions: Position[], filter: ActionDefinition['targetFilter']): 
+    Position[]
+  {
+    const gameStore = useGameStore()
+    if (!gameStore.map) return []
+   
+    positions = positions.filter(pos =>
       pos.x >= 0 && pos.x < gameStore.map!.width &&
-      pos.y >= 0 && pos.y < gameStore.map!.height
-    )
+      pos.y >= 0 && pos.y < gameStore.map!.height)
+
+    if (filter.requiredFreeSpace === true && gameStore.map)
+    {
+      positions = positions.filter(pos =>
+        gameStore.map!.terrain[pos.x][pos.y] === 0
+      )
+    }
+
+    return positions
   }
 
   function getManhattanPositions(center: Position, range: number): Position[] {
