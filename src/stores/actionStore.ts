@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import type { ActionDefinition, ScheduledAction } from '@/types/action'
 import type { Position } from '@/types/unit'
 import { useGameStore } from './gameStore'
-import { useActionHighlight } from '@/composables/useActionHighlight'
+
 
 export const useActionStore = defineStore('action', () => {
   /// State

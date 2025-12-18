@@ -66,7 +66,7 @@ export async function drawMeleeAttack(
   targetUnitId: number
 ): Promise<void> {
   const container = state.unitContainers.value.get(targetUnitId)
-  if (!container || container.destroyed) return
+  if (!container || container.destroyed || !unitId) return
 
   const slashEffect = new Graphics()
   

@@ -5,7 +5,6 @@ import type { GameState, Player } from '@/types/game'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { useActionStore } from '@/stores/actionStore'
 import { ActionDefinition, ScheduledAction } from '@/types/action'
-import { useEffectStore } from '@/stores/effectStore'
 import { useEffectSystem } from './useEffectSystem'
 
 const connection = ref<signalR.HubConnection | null>(null)

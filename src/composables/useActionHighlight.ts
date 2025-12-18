@@ -98,7 +98,7 @@ export function useActionHighlight() {
           continue
       }
 
-      const positions = actionSystem.getPositionsByPattern(basePos, layer.pattern, layer.range, action.targetFilter)
+      const positions = actionSystem.getPositionsByPattern(basePos, layer.pattern, layer.range ?? null, action.targetFilter)
       pixi.drawHighlights(positions, layer.type, layer.relative === 'Target')
     }
   }
@@ -131,7 +131,7 @@ export function useActionHighlight() {
       if (!scheduled.target || action.targetType !== 'Cell' || !scheduled.target)
         continue
 
-      const positions = actionSystem.getPositionsByPattern(scheduled.target, layer.pattern, layer.range, action.targetFilter)
+      const positions = actionSystem.getPositionsByPattern(scheduled.target, layer.pattern, layer.range ?? null, action.targetFilter)
       pixi.drawHighlights(positions, layer.type, true)
     }
   }
